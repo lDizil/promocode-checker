@@ -1,0 +1,20 @@
+# OS and IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Frontend
+node_modules/
+dist/
+build/
+coverage/
+
+# Backend and tools
+bin/
+tmp/
+*.log
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
