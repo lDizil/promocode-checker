@@ -33,3 +33,9 @@ docs/      — продуктовые и архитектурные матери
 ## License
 
 MIT
+
+## Процесс разработки
+
+- [Kanban-доска YouTrack](https://goddev.myjetbrains.com/youtrack/agiles/204-3/current)
+- [Настройка интеграции YouTrack ↔ GitHub](docs/YOUTRACK_GITHUB_INTEGRATION.md)
+- Правила для агентов и участников: [AGENTS.md](AGENTS.md)
