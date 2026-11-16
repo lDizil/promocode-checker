@@ -18,3 +18,8 @@ tmp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Local environment files
+.env
+.env.*
+!.env.example
