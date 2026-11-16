@@ -1,75 +1,48 @@
 # Интеграция YouTrack и GitHub
 
-Нативная VCS-интеграция связывает задачи `BR-*` с ветками, commits и pull requests репозитория `lDizil/promocode-checker`.
+Проект `BR` подключён к репозиторию `lDizil/promocode-checker` через нативную VCS-интеграцию YouTrack.
 
-GitHub Issues не синхронизируются этой интеграцией автоматически. Они остаются рабочим зеркалом задач, а источником истины является YouTrack.
+Интеграция автоматически добавляет commits и pull requests в activity задачи, если номер `BR-*` указан в ветке, commit message, заголовке или описании PR.
 
-## Рекомендуемый способ: GitHub App
+GitHub Issues не синхронизируются автоматически. Они используются как рабочее зеркало, а источником требований и статусов остаётся YouTrack.
 
-GitHub App безопаснее личного токена: доступ ограничивается выбранным репозиторием и не зависит от PAT конкретного участника.
+## Текущая настройка
 
-### 1. Создать GitHub App
+- YouTrack project: `BR — Brotherhood of the Ring`;
+- repository: `https://github.com/lDizil/promocode-checker`;
+- server type: GitHub;
+- authentication: Personal access token;
+- webhook events: `push`, `pull_request`, `workflow_job`.
 
-Открыть GitHub:
+Webhook создаёт и обслуживает YouTrack. Вручную создавать второй webhook не нужно.
 
-`Settings → Developer settings → GitHub Apps → New GitHub App`
+## Настройка через Personal Access Token
 
-Заполнить:
+В GitHub открыть:
 
-- **GitHub App name:** любое уникальное имя, например `goddev-youtrack-promocode-checker`;
-- **Homepage URL:** `https://goddev.youtrack.cloud`;
-- **Callback URL:** оставить пустым;
-- **Webhook → Active:** выключить — webhook создаст YouTrack;
-- **Where can this GitHub App be installed?:** Only on this account.
+`Settings → Developer settings → Personal access tokens → Tokens (classic)`
 
-Repository permissions:
+Создать отдельный token для YouTrack. JetBrains указывает scopes:
 
-| Permission | Access |
-|---|---|
-| Actions | Read-only |
-| Contents | Read-only |
-| Metadata | Read-only, включается автоматически |
-| Pull requests | Read-only |
-| Webhooks | Read & write |
+- `repo`;
+- `read:org`;
+- `admin:repo_hook`.
 
-Остальные разрешения оставить `No access`.
-
-### 2. Получить реквизиты App
-
-После создания:
-
-1. Скопировать **App ID**.
-2. Нажать **Generate a private key**.
-3. GitHub скачает файл `.pem`.
-4. Установить App в аккаунт `lDizil`.
-5. Выбрать **Only select repositories** → `promocode-checker`.
-
-Private key нельзя коммитить, отправлять в Issues/PR или сохранять в GitHub Secrets. Если ключ оказался публичным, его нужно удалить в настройках App и сгенерировать заново.
-
-### 3. Подключить репозиторий в YouTrack
-
-Открыть YouTrack:
+В YouTrack открыть:
 
 `Projects → Brotherhood of the Ring → Settings → Version Control → New VCS Integration`
 
-Либо:
+Заполнить:
 
-`Administration → Integrations → VCS Integration → New VCS Integration`
-
-Параметры:
-
-- **Main YouTrack project:** `BR — Brotherhood of the Ring`;
 - **Server type:** GitHub;
 - **Repository URL:** `https://github.com/lDizil/promocode-checker`;
-- **Authentication type:** GitHub App;
-- **App ID:** значение из GitHub;
-- **Private key:** загрузить скачанный `.pem` напрямую в YouTrack.
+- **Authentication type:** Personal access token;
+- **Personal access token:** созданный token;
+- **Main YouTrack project:** `BR`.
 
-После сохранения YouTrack найдёт installation GitHub App и автоматически создаст repository webhook.
+Token вставляется только в YouTrack. Его нельзя коммитить, публиковать в Issues/PR или добавлять в документацию.
 
-### 4. Настройки интеграции
-
-Рекомендуемые значения:
+## Рекомендуемые параметры
 
 - **Processing scheme for VCS changes:** `Add commits, ignore commands`;
 - **Monitored branches:** оставить пустым, чтобы отслеживать все ветки;
@@ -77,36 +50,64 @@ Private key нельзя коммитить, отправлять в Issues/PR �
 - **Parse commits for issue comments:** выключить;
 - **VCS changes visibility:** без дополнительных ограничений внутри проекта.
 
-Так commits и PR связываются с задачами, но текст commit message не может случайно менять статусы YouTrack.
+Режим `Add commits, ignore commands` связывает изменения с задачами, но не позволяет тексту commit message случайно менять состояние YouTrack.
 
-### 5. Проверить интеграцию
+## Сопоставление участников
 
-1. Убедиться, что в GitHub появился активный webhook:
-   `Repository Settings → Webhooks`.
-2. В YouTrack выполнить **Import commits and open pull requests**.
-3. Для следующей реальной задачи создать ветку `BR-N-<slug>`.
-4. Сделать commit `BR-N: <изменение>`.
-5. Создать PR с `BR-N` в заголовке или описании.
-6. Проверить activity задачи `BR-N`: должны появиться commit и PR.
+YouTrack должен сопоставить автора GitHub с конкретным пользователем проекта. Настройка выполняется отдельно в профиле каждого участника — нельзя добавлять имена всей команды в профиль одного человека.
 
-Старые commits без номера `BR-*` автоматически к задачам не привяжутся.
+Каждому участнику нужно:
 
-## Альтернатива: Personal Access Token
+1. В GitHub открыть `Settings → Public profile` и проверить поле **Name**.
+2. Если поле **Name** пустое, заполнить его и сохранить профиль.
+3. В YouTrack открыть аватар → **Profile** → **General**.
+4. В поле **VCS Usernames** добавить точное значение поля GitHub **Name**.
+5. Сохранить профиль.
+6. Принять приглашение в репозиторий, если оно ещё ожидает подтверждения.
 
-Если GitHub App настроить не получается, можно выбрать в YouTrack authentication type **Personal access token**.
+Текущие значения команды:
 
-Для classic PAT JetBrains указывает scopes:
+| Участник | YouTrack | GitHub | VCS Username |
+|---|---|---|---|
+| Денис | `dizi` | `lDizil` | `Denis` |
+| Илья | `ilya.tyunin.2457` | `Tomato1337` | `Ilya` |
+| Влад | `vladislavkunetsky` | `prorok210` | `Vladislav` |
+| Виктория | `vkkropivka05` | `ViktoriaKropivka` | заполнить GitHub **Name** и добавить это же значение |
 
-- `repo`;
-- `read:org`;
-- `admin:repo_hook`.
+После изменения `VCS Usernames` повторно выполнить **Import commits and open pull requests** в настройках интеграции. В дальнейшем новые commits и pull requests обрабатываются webhook автоматически.
 
-PAT вставляется только в поле **Personal access token** в YouTrack. Его нельзя добавлять в репозиторий или GitHub Secrets. Для постоянной командной интеграции GitHub App предпочтительнее.
+## Проверка подключения
 
-## Ежедневный процесс
+1. В GitHub открыть `Repository Settings → Webhooks`.
+2. Проверить, что webhook активен и слушает `push`, `pull_request`, `workflow_job`.
+3. В YouTrack выполнить **Import commits and open pull requests**.
+4. Создать ветку `BR-N-<slug>` для реальной задачи.
+5. Сделать commit `BR-N: <изменение>`.
+6. Создать PR с `BR-N` в заголовке или описании.
+7. Проверить activity задачи `BR-N`: там должны появиться commit и PR.
 
-- YouTrack хранит статус и требования задачи.
-- GitHub Issue хранит рабочее обсуждение реализации.
-- Ветка, commits и PR содержат номер `BR-N`.
-- Нативная интеграция автоматически показывает commits и PR в YouTrack.
-- После merge исполнитель переводит задачу в `Fixed`, проверяющий — в `Verified`.
+Старые commits без номера `BR-*` к задачам автоматически не привязываются.
+
+## Рабочий процесс
+
+1. Берём задачу `BR-N` и переводим её в `In Progress`.
+2. При необходимости создаём GitHub Issue `[BR-N] <summary>`.
+3. Создаём ветку `BR-N-<slug>`.
+4. Начинаем commit messages с `BR-N:`.
+5. Указываем `BR-N` в заголовке или описании PR.
+6. YouTrack автоматически показывает commits и PR в activity задачи.
+7. После merge переводим задачу в `Fixed`; `Verified` ставит проверяющий.
+
+## GitHub App как альтернатива
+
+Вместо PAT можно использовать GitHub App с минимальными разрешениями:
+
+| Permission | Access |
+|---|---|
+| Actions | Read-only |
+| Contents | Read-only |
+| Metadata | Read-only |
+| Pull requests | Read-only |
+| Webhooks | Read & write |
+
+Для текущего учебного проекта PAT уже настроен, поэтому переход на GitHub App не требуется.
