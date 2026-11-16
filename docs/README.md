@@ -11,5 +11,10 @@
 
 - Figma (дизайн): https://www.figma.com/design/r54xR3rQYtzAA3YfbcEfs6/Promocode-Checker?node-id=12-8
 - [ARD](ARD.md) — анализ и требования
-- [DESIGN_SPEC](DESIGN_SPEC.md) — спецификация дизайна
+- [DESIGN_SPEC](design/DESIGN_SPEC.md) — спецификация дизайна
 - [research/](research/) — исследования
+
+## Backend
+
+- [Проект архитектуры](backend/ARCHITECTURE.md)
+- [Проект БД](backend/DATABASE.md)
