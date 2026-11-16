@@ -1,0 +1,19 @@
+.skeleton {
+  display: block;
+  background: var(--color-neutral-bg);
+  border-radius: var(--radius-md);
+  animation: shimmer 1.2s ease-in-out infinite;
+
+  &[data-radius='sm'] {
+    border-radius: var(--radius-sm);
+  }
+  &[data-radius='full'] {
+    border-radius: var(--radius-full);
+  }
+}
+
+@keyframes shimmer {
+  50% {
+    opacity: 0.55;
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://feod.dev/feod.schema.json",
+  "rootDefault": {
+    "layerDirs": { "global": "globals" },
+    "common": { "maxDepth": 2 },
+    "modules": {
+      "publicEntries": ["index.ts", "mocks.ts"],
+      "requirePublicEntry": true
+    },
+    "submodules": { "visibility": "parent-only" },
+    "imports": { "computed": "forbid", "unresolved": "forbid" },
+    "cycles": { "modules": true, "files": true },
+    "ignore": ["src/app/routeTree.gen.ts"],
+    "extra": {
+      "confine": [
+        {
+          "name": "ui-sdk-in-ui-kit",
+          "imports": ["@ui-sdk/**", "lucide-react"],
+          "allowedIn": ["src/common/ui/**"],
+          "message": "ui-sdk и lucide-react импортируются только в common/ui (ADR 0002)."
+        },
+        {
+          "name": "msw-in-mocks",
+          "imports": ["msw", "msw/**", "@faker-js/faker"],
+          "allowedIn": [
+            "src/modules/*/mocks.ts",
+            "src/modules/*/api/*.mocks.ts",
+            "src/modules/*/modules/*/mocks.ts",
+            "src/modules/*/modules/*/api/*.mocks.ts",
+            "src/app/integrations/mocks/**",
+            "src/**/*.stories.tsx"
+          ],
+          "message": "MSW и faker живут только в моках и сторис."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,87 @@
+.region {
+  /* DESIGN_SPEC 3.25: bottom-left of the content, not over the sidebar. */
+  margin-inline-start: var(--layout-sidebar-width, 0px);
+  inline-size: min(360px, calc(100vw - var(--space-8)));
+}
+
+.region > ol {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toast {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: 48px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-overlay);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.body {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Two lines total with a description: one for the title, one for the description. */
+.body[data-has-description] .title {
+  -webkit-line-clamp: 1;
+}
+
+.description {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.action {
+  position: relative;
+  padding: var(--space-2);
+  margin: calc(-1 * var(--space-2));
+  border: 0;
+  background: none;
+  color: var(--color-on-primary);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-highlight);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Keeps the action's tap zone at 44 without stretching the toast (DESIGN_SPEC 1.8). */
+.action::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}

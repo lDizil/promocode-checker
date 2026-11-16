@@ -1,0 +1,33 @@
+.root {
+  flex: none;
+}
+
+.root path {
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ink {
+  stroke: var(--color-text);
+}
+
+.inkOnAccent {
+  stroke: var(--color-on-accent);
+}
+
+.paper {
+  fill: var(--color-surface-2);
+}
+
+.yellow {
+  fill: var(--color-highlight);
+}
+
+.purple {
+  fill: var(--color-accent);
+}
+
+.neutral {
+  fill: var(--color-neutral-bg);
+}

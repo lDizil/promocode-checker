@@ -1,0 +1,22 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: var(--tap-min);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.root svg {
+  flex: none;
+}
+
+.root[data-sticky] {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+}

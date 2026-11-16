@@ -1,0 +1,35 @@
+.badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 28px;
+  padding-inline: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-bg);
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+
+  /* 28 high; the pseudo-element keeps the tap zone at 44 (DESIGN_SPEC 1.8). */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+  }
+
+  &[data-level='high'] {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+  }
+
+  &[data-level='medium'] {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+  }
+}

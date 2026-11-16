@@ -1,0 +1,18 @@
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.meta[data-stale] {
+  color: var(--color-warning);
+}
+
+.icon {
+  flex: none;
+}

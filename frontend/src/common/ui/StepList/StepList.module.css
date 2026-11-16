@@ -1,0 +1,96 @@
+.root {
+  container-type: inline-size;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  column-gap: var(--space-3);
+  align-items: start;
+  padding-block-end: var(--space-4);
+  min-block-size: 56px;
+}
+
+.item:last-child {
+  padding-block-end: 0;
+}
+
+/* Vertical connector between squares: 2 px highlight (DESIGN_SPEC 3.33). */
+.item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  inset-block: 30px 0;
+  inset-inline-start: 13px;
+  inline-size: 2px;
+  background: var(--color-highlight);
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.item[data-state='current'] .marker {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.number {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.doneBadge {
+  position: absolute;
+  inset-block-end: -5px;
+  inset-inline-end: -5px;
+  display: grid;
+  place-items: center;
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: var(--radius-full);
+  background: var(--color-highlight);
+  color: var(--color-on-highlight);
+}
+
+.description {
+  display: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* The description column needs room; in a 360 px sidebar the list stays two-column. */
+@container (width >= 560px) {
+  .item {
+    grid-template-columns: 28px 1fr 240px;
+    column-gap: var(--space-4);
+  }
+
+  .description {
+    display: block;
+  }
+}

@@ -1,0 +1,39 @@
+.root {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.root[data-tone='neutral'] {
+  background: var(--color-neutral-bg);
+}
+
+.icon {
+  margin-block-start: 1px;
+  color: var(--color-warning);
+}
+
+.root[data-tone='neutral'] .icon {
+  color: var(--color-text);
+}
+
+.content {
+  display: grid;
+  gap: 2px;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.text {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

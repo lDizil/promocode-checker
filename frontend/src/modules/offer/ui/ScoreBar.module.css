@@ -1,0 +1,80 @@
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.segments {
+  display: inline-flex;
+  flex: none;
+}
+
+.segment {
+  inline-size: 8px;
+  block-size: 6px;
+  background: var(--color-neutral-bg);
+}
+
+.segments[data-level='high'] .segment[data-on],
+.ticks[data-level='high'] .tick[data-on] {
+  background: var(--color-success);
+}
+
+.segments[data-level='medium'] .segment[data-on],
+.ticks[data-level='medium'] .tick[data-on] {
+  background: var(--color-warning);
+}
+
+.segments[data-level='low'] .segment[data-on],
+.segments[data-level='unknown'] .segment[data-on],
+.segments[data-level='ended'] .segment[data-on],
+.ticks[data-level='low'] .tick[data-on],
+.ticks[data-level='unknown'] .tick[data-on],
+.ticks[data-level='ended'] .tick[data-on] {
+  background: var(--color-text-muted);
+}
+
+.caption {
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.segmented {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.segmentedLabel {
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.segmentedRow {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.ticks {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.tick {
+  inline-size: 24px;
+  block-size: 8px;
+  background: var(--color-neutral-bg);
+}
+
+.value {
+  color: var(--color-text);
+  line-height: 1;
+}

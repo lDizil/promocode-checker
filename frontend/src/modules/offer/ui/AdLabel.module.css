@@ -1,0 +1,21 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-block-size: var(--tap-min);
+  padding-inline: var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--color-ad);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.link {
+  display: inline-block;
+  margin-block-start: var(--space-2);
+}

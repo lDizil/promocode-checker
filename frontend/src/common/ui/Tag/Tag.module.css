@@ -1,0 +1,44 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 24px;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dot {
+  flex: none;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-dot-purple);
+}
+
+.tag[data-tone='user'] .dot {
+  background: var(--color-dot-yellow);
+}
+
+.tag[data-tone='merchant'] .dot {
+  background: var(--color-dot-green);
+}
+
+.tag[data-tone='danger'] .dot {
+  background: var(--color-dot-red);
+}
+
+.tag[data-tone='success'] {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.tag[data-tone='success'] .dot {
+  background: var(--color-dot-green);
+}

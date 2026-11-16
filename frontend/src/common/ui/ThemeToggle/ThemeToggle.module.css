@@ -1,0 +1,58 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.label {
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.label[data-active] {
+  color: var(--color-text);
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  inline-size: 40px;
+  block-size: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-bg);
+  cursor: pointer;
+  overflow: visible;
+
+  /* 24px control, 44px tap zone (DESIGN_SPEC 1.8). */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px -2px;
+  }
+}
+
+.thumb {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-start: 3px;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  transition: inset-inline-start var(--duration-fast) var(--easing-out);
+}
+
+.thumb[data-checked] {
+  inset-inline-start: 19px;
+}
+
+.root[data-state='system'] .thumb {
+  inset-inline-start: 11px;
+}

@@ -1,0 +1,45 @@
+.root {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-highlight);
+  color: var(--color-on-highlight);
+  text-align: center;
+}
+
+.badge {
+  position: absolute;
+  inset-block-start: calc(-1 * var(--space-5));
+  inset-inline-start: 50%;
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border: 1px solid var(--color-on-highlight);
+  border-radius: var(--radius-full);
+  background: var(--color-highlight);
+  translate: -50% 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.description {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.root > :last-child {
+  margin-block-start: var(--space-1);
+}

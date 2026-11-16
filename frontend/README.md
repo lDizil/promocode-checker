@@ -1,12 +1,13 @@
 # Frontend
 
-Клиентское приложение сервиса промокодов.
+Клиентское приложение сервиса «Рабочий код»: проверенные промокоды и бесплатные офферы.
 
-Первые сценарии:
+Стек: TanStack Start (SSR) + Router + Query, React 19, zod, CSS Modules, ui-sdk, Storybook. Архитектура — FEOD. Правила и команды — в [`AGENTS.md`](./AGENTS.md), решения — в [`docs/adr/`](./docs/adr/).
 
-- выбор сервиса и параметров корзины;
-- поиск и просмотр промокодов;
-- ручная проверка кода;
-- отображение статуса и условий применения.
+```sh
+pnpm install
+pnpm dev          # http://localhost:3000, API отдаёт MSW
+pnpm storybook    # http://localhost:6006
+```
 
-Стек пока не выбран.
+Production: `docker build -t promocode-frontend . && docker run -p 3000:3000 -e API_ORIGIN=https://api.example promocode-frontend`. `API_ORIGIN` — адрес бэкенда для SSR-запросов; браузер ходит на `/api` того же хоста.
