@@ -19,9 +19,9 @@ TanStack Start (SSR) + Router + Query, React 19, zod 4, TanStack Form, CSS Modul
 | Storybook                    | `pnpm storybook`                                       |
 | токены из `tokens/*.json`    | `pnpm tokens`                                          |
 | UI до/после                  | `pnpm verify:ui` — отчёт `.verify/report.md`           |
-| проверка цветовых токенов     | `pnpm lint:tokens`                                    |
-| тесты самого верификатора     | `pnpm test:verify`                                    |
-| установка commit gate        | `pnpm verify:install`                                 |
+| проверка цветовых токенов    | `pnpm lint:tokens`                                     |
+| тесты самого верификатора    | `pnpm test:verify`                                     |
+| установка commit gate        | `pnpm verify:install`                                  |
 
 ## Архитектура (FEOD)
 
@@ -50,7 +50,6 @@ TanStack Start (SSR) + Router + Query, React 19, zod 4, TanStack Form, CSS Modul
 - Новые нарушения геометрии исправлять, непредусмотренные задачей изменения откатывать. Намеренные отличия подтверждать по одному ID с причиной из задачи; массовая приёмка запрещена. Штамп привязан к проверенному коду и инструментам проверки.
 - Для нового экрана/состояния дополнить `scripts/verify/scenarios.ts`. Storybook проверяет компоненты, runner — страницы; изменённое поведение дополнительно пройти реальным вводом через `ui-testing`.
 - Сравнение с базой ловит регрессии, но не подтверждает соответствие Figma. Проверять макет и токены отдельно. Не менять проверки/эталон ради зелёного результата. После трёх неудачных исправлений эскалировать с before/after/diff и измерениями.
-
 
 ## Browser support
 
