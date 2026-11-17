@@ -263,17 +263,21 @@ async function capture(
       content:
         '*,*::before,*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }',
     })
+    await scenario.steps?.(page)
     await page.evaluate(async () => {
       await document.fonts.ready
     })
-    await scenario.steps?.(page)
     await page.evaluate(async () => {
       const { promise, resolve } = Promise.withResolvers<void>()
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
       await promise
     })
     const audit = await page.evaluate(auditPage, null)
-    const png = await page.screenshot({ fullPage: true, animations: 'disabled' })
+    // A modal locks the background: content below the viewport is not part of that user state.
+    // Full-page capture there asks Chromium to rasterize offscreen text behind a fixed overlay,
+    // which can produce compositor-only differences. Ordinary page scenarios cover the full page.
+    const modalOpen = (await page.locator('[aria-modal="true"]:visible, dialog:modal').count()) > 0
+    const png = await page.screenshot({ fullPage: !modalOpen, animations: 'disabled' })
     return { audit, png, errors }
   } finally {
     await context.close()
