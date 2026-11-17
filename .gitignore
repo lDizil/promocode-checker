@@ -14,6 +14,7 @@ coverage/
 storybook-static/
 __screenshots__/
 frontend/src/app/routeTree.gen.ts
+frontend/.verify/
 
 # Backend and tools
 bin/

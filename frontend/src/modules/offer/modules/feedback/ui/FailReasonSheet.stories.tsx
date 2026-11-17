@@ -22,7 +22,7 @@ export const ServerError = meta.story({ args: { error: 'Не удалось от
 export const OtherSelected = meta.story({
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole('radio', { name: 'Другое' }))
-    await expect(canvas.getByRole('textbox', { name: 'Коротко опишите' })).toBeVisible()
+    await waitFor(() => expect(canvas.getByRole('textbox', { name: 'Коротко опишите' })).toBeVisible())
   },
 })
 
