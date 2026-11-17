@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "verify gate: node не найден в PATH (нужен Node 24+)." >&2
+  exit 1
+fi
+
+exec node "$root/frontend/scripts/verify/gate.ts" prepare-commit-msg "$@"
