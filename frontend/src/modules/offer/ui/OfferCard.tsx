@@ -7,7 +7,7 @@ import { Tag, type TagTone } from '@/common/ui/Tag/index.ts'
 import { MerchantAvatar } from '@/modules/merchant/index.ts'
 
 import { buildConditions } from '../model/conditions.ts'
-import { formatAgo, formatDate, formatHeadline } from '../model/format.ts'
+import { formatAgo, formatDate, formatHeadline, formatVerificationMethod } from '../model/format.ts'
 import { scoreLevel, type Offer, type SourceKind } from '../model/offer.ts'
 import { AdLabel } from './AdLabel.tsx'
 import { AvailabilityBadge } from './AvailabilityBadge.tsx'
@@ -33,13 +33,6 @@ const FREE_TYPE: Record<Offer['type'], string> = {
   trial: 'Пробный период',
   student: 'Студентам',
   startup: 'Стартапам',
-}
-
-const SOURCE_TEXT: Record<SourceKind, string> = {
-  partner_api: 'партнёрская сеть',
-  official_page: 'сайт магазина',
-  partner_channel: 'канал-партнёр',
-  user_submission: 'прислал пользователь',
 }
 
 const SOURCE_TAG: Record<SourceKind, { tone: TagTone; label: string }> = {
@@ -99,9 +92,12 @@ export function OfferCard({
   const totalReviews = offer.verification.success7d + offer.verification.fail7d
   const meta = isFree
     ? [FREE_TYPE[offer.type], checkedAt ? `проверено ${formatDate(checkedAt)}` : 'ещё не проверен'].join(' · ')
-    : [checkedAt ? `Проверено ${formatAgo(checkedAt, now)}` : 'Ещё не проверен', SOURCE_TEXT[offer.source.kind]].join(
-        ' · ',
-      )
+    : [
+        checkedAt ? `Проверено ${formatAgo(checkedAt, now)}` : 'Ещё не проверен',
+        formatVerificationMethod(offer.verification.method),
+      ]
+        .filter(Boolean)
+        .join(' · ')
   const endedDate = offer.endedAt ?? offer.expiresAt
 
   if (density === 'compact') {
@@ -141,7 +137,7 @@ export function OfferCard({
       data-level={level}
     >
       {(context === 'feed' || offer.adMarking) && (
-        <div className={styles.header}>
+        <div className={styles.header} data-merchant-hidden={context === 'merchant' || undefined}>
           {context === 'feed' && (
             <div className={styles.merchant}>
               <MerchantAvatar name={offer.merchant.name} logoUrl={offer.merchant.logoUrl} size={32} />
@@ -219,7 +215,7 @@ export function OfferCard({
         <Tag tone={tag.tone}>{tag.label}</Tag>
       </div>
 
-      <ConditionList conditions={buildConditions(offer, now)} />
+      <ConditionList columns={context === 'merchant' ? 1 : 2} conditions={buildConditions(offer, now)} />
 
       <footer className={styles.footer}>
         {offer.isEnded ? (

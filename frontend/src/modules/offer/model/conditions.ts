@@ -1,4 +1,4 @@
-import { formatDate } from './format.ts'
+import { formatDate, formatMoney } from './format.ts'
 import type { Offer, Requirement } from './offer.ts'
 
 export type ConditionKind = 'restriction' | 'deadline' | 'neutral'
@@ -19,6 +19,8 @@ const REQUIREMENT_TEXT: Record<Requirement, string> = {
   student_status: 'Нужен статус студента',
 }
 
+const CATEGORY_LIST = new Intl.ListFormat('ru-RU', { style: 'long', type: 'conjunction' })
+
 const ORDER: Record<ConditionKind, number> = { restriction: 0, deadline: 1, neutral: 2 }
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -31,9 +33,12 @@ export function buildConditions(offer: Offer, now: Date): Condition[] {
 
   if (conditions.customerType === 'new') restriction('Только первый заказ')
   if (conditions.customerType === 'existing') restriction('Только для постоянных клиентов')
-  if (conditions.minOrder !== null) {
-    const amount = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 })
-    restriction(`От ${amount.format(conditions.minOrder)}`)
+  if (conditions.minOrder !== null) restriction(`От ${formatMoney(conditions.minOrder, 'RUB')}`)
+  if (conditions.categoriesInclude.length > 0) {
+    restriction(`Только категории: ${CATEGORY_LIST.format(conditions.categoriesInclude)}`)
+  }
+  if (conditions.categoriesExclude.length > 0) {
+    restriction(`Не действует на категории: ${CATEGORY_LIST.format(conditions.categoriesExclude)}`)
   }
   if (conditions.stackableWith.length === 0 && offer.kind === 'code') restriction('Не суммируется с другими скидками')
   for (const requirement of conditions.requirements) restriction(REQUIREMENT_TEXT[requirement])

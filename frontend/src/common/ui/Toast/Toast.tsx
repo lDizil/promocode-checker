@@ -1,16 +1,18 @@
 import {
   Toast as ToastPart,
   ToastAction,
+  ToastClose,
   ToastDescription,
   ToastRegion,
   ToastTitle,
   createToaster,
 } from '@ui-sdk/react/toast'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 import { Icon } from '../Icon/Icon.tsx'
-import { Check, Info, TriangleAlert } from '../Icon/icons.ts'
+import { Check, Info, TriangleAlert, X } from '../Icon/icons.ts'
 import styles from './Toast.module.css'
+import { bindToastActivity } from './toast-activity.ts'
 
 /** DESIGN_SPEC 3.25: a toast disappears after 4 s. */
 const TOAST_DURATION = 4000
@@ -39,6 +41,7 @@ export function Toaster({ side = 'bottom', align = 'start', className }: Toaster
       align={align}
       className={[styles.region, className].filter(Boolean).join(' ')}
       aria-label="Уведомления"
+      ref={bindToastActivity}
     >
       {(data) => {
         const icon = data.type === 'success' ? Check : data.type === 'error' ? TriangleAlert : Info
@@ -53,6 +56,18 @@ export function Toaster({ side = 'bottom', align = 'start', className }: Toaster
               <ToastDescription className={styles.description} />
             </div>
             {data.action && <ToastAction className={styles.action} />}
+            <ToastClose className={styles.close} aria-label="Закрыть уведомление">
+              <Icon icon={X} size={16} />
+            </ToastClose>
+            {Number.isFinite(data.duration) && data.duration > 0 && (
+              <span
+                key={data.version}
+                className={styles.timeline}
+                data-toast-timeline=""
+                aria-hidden="true"
+                style={{ '--toast-duration': `${data.duration}ms` } as CSSProperties}
+              />
+            )}
           </ToastPart>
         )
       }}

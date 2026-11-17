@@ -17,13 +17,8 @@
   --font-display: Inter, system-ui, sans-serif;
   --font-ui: Inter, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --duration-fast: 0.15s;
-  --duration-base: 0.25s;
-  --easing-out: cubic-bezier(0, 0, 0.58, 1);
-  --shadow-overlay: 0px 12px 32px 0px rgba(28, 26, 22, 0.14);
-  --focus-width: 2px;
-  --focus-offset: 2px;
-  --tap-min: 44px;
+  --color-pressed-overlay: color-mix(in srgb, var(--color-text) 4%, transparent);
+  --color-pressed-overlay-strong: color-mix(in srgb, var(--color-text) 8%, transparent);
   --color-bg: #fdf8ec;
   --color-surface-1: #eee8d4;
   --color-surface-2: #ffffff;
@@ -53,6 +48,13 @@
   --color-ad: #6b675d;
   --color-scrim: rgba(28, 26, 22, 0.4);
   --color-tile-light: #f7f2e8;
+  --duration-fast: 0.15s;
+  --duration-base: 0.25s;
+  --easing-out: cubic-bezier(0, 0, 0.58, 1);
+  --shadow-overlay: 0px 12px 32px 0px rgba(28, 26, 22, 0.14);
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --tap-min: 44px;
   color-scheme: light;
 }
 

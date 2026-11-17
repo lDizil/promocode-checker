@@ -41,12 +41,12 @@ export function Accordion({ items, multiple = false, defaultOpen, className }: A
         return (
           <AccordionItem key={value} value={value} className={styles.item}>
             <AccordionHeader>
-              <AccordionTrigger className={styles.trigger}>
+              <AccordionTrigger className={[styles.trigger, 'text-title'].join(' ')}>
                 <span className={styles.question}>{item.question}</span>
                 <Icon icon={ChevronDown} size={20} className={styles.chevron} />
               </AccordionTrigger>
             </AccordionHeader>
-            <AccordionPanel className={styles.panel}>{item.answer}</AccordionPanel>
+            <AccordionPanel className={[styles.panel, 'text-body-sm'].join(' ')}>{item.answer}</AccordionPanel>
           </AccordionItem>
         )
       })}

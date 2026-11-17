@@ -12,7 +12,7 @@
 }
 
 @container (width >= 520px) {
-  .list {
+  .list[data-columns='2'] {
     grid-template-columns: 1fr 1fr;
     column-gap: var(--space-4);
   }

@@ -14,7 +14,9 @@ const meta = preview.meta({
 
 export const Link = meta.story({
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('link', { name: 'Рабочий код' })).toHaveAttribute('href', '/')
+    const link = canvas.getByRole('link', { name: 'Рабочий код' })
+    await expect(link).toHaveAttribute('href', '/')
+    await expect(link.querySelector('svg')).toHaveAttribute('viewBox', '0 0 32 32')
   },
 })
 
@@ -27,6 +29,8 @@ export const CustomRenderLink = meta.story({
     ),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('link', { name: 'Рабочий код' })).toHaveAttribute('href', '/about/verification')
+    const link = canvas.getByRole('link', { name: 'Рабочий код' })
+    await expect(link).toHaveAttribute('href', '/about/verification')
+    await expect(link.querySelector('svg')).toHaveAttribute('viewBox', '0 0 32 32')
   },
 })

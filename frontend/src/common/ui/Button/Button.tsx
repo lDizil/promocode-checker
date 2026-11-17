@@ -47,7 +47,7 @@ export function Button({
   return (
     <Primitive
       {...props}
-      className={[styles.button, block && styles.block, className].filter(Boolean).join(' ')}
+      className={[styles.button, 'text-button', block && styles.block, className].filter(Boolean).join(' ')}
       data-variant={variant}
       data-size={size}
     >
@@ -68,7 +68,7 @@ export function IconButton({ variant = 'secondary', size = 'md', icon, label, cl
     <Primitive
       {...props}
       aria-label={label}
-      className={[styles.button, styles.iconOnly, className].filter(Boolean).join(' ')}
+      className={[styles.button, 'text-button', styles.iconOnly, className].filter(Boolean).join(' ')}
       data-variant={variant}
       data-size={size}
     >

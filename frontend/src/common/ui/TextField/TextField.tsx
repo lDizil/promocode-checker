@@ -14,6 +14,9 @@ export interface TextFieldProps {
   onValueChange: (value: string) => void
   /** `code` renders JetBrains Mono and upper-cases the value (DESIGN_SPEC 3.42). */
   kind?: TextFieldKind
+  type?: 'text' | 'number'
+  inputMode?: 'decimal' | 'numeric'
+  min?: number
   placeholder?: string
   /** Подсказка под полем (`caption`, `text-muted`). */
   helper?: string
@@ -39,6 +42,9 @@ export function TextField({
   value,
   onValueChange,
   kind = 'text',
+  type = 'text',
+  inputMode,
+  min,
   placeholder,
   helper,
   showHelper = true,
@@ -88,6 +94,9 @@ export function TextField({
         ) : (
           <Input
             className={styles.input}
+            type={type}
+            inputMode={inputMode}
+            min={min}
             value={value}
             onValueChange={change}
             placeholder={placeholder}

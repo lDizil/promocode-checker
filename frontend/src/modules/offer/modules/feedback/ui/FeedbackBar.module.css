@@ -28,6 +28,10 @@
   line-height: 18px;
 }
 
+.queued {
+  color: var(--color-text-muted);
+}
+
 .iconSuccess {
   flex: none;
   color: var(--color-success);

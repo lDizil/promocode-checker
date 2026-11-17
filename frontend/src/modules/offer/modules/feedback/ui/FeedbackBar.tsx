@@ -9,6 +9,8 @@ export interface FeedbackBarProps {
   state?: FeedbackBarState
   /** True for 3 s after a «worked» vote: shows «Спасибо!…» before settling (DESIGN_SPEC 3.18). */
   fresh?: boolean
+  /** The vote is paused until the connection returns; show the queue line instead of the answers. */
+  queued?: boolean
   /** Label of the chosen reason for the `sent-fail` line. */
   reasonLabel?: string | null
   /** A vote is on its way; both answers stay visible but inert. */
@@ -24,6 +26,7 @@ export interface FeedbackBarProps {
 export function FeedbackBar({
   state = 'idle',
   fresh = false,
+  queued = false,
   reasonLabel = null,
   pending = false,
   onWorked,
@@ -35,8 +38,24 @@ export function FeedbackBar({
   if (state === 'disabled') return null
 
   return (
-    <div className={[styles.bar, className].filter(Boolean).join(' ')} data-state={state}>
-      {state === 'idle' ? (
+    <div
+      className={[styles.bar, className].filter(Boolean).join(' ')}
+      data-state={state}
+      data-queued={queued ? '' : undefined}
+    >
+      {state === 'idle' && queued ? (
+        <p className={`${styles.sent} ${styles.queued}`}>
+          <span aria-live="polite">Отправим, когда появится связь</span>
+          {reasonLabel && (
+            <>
+              <span className={styles.separator} aria-hidden="true">
+                ·
+              </span>
+              <span>Причина: {reasonLabel}</span>
+            </>
+          )}
+        </p>
+      ) : state === 'idle' ? (
         <>
           <span className={`${styles.prompt} text-body-sm`}>Сработал?</span>
           <div className={styles.actions}>

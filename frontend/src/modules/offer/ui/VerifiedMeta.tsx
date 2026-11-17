@@ -1,16 +1,9 @@
 import { Icon } from '@/common/ui/Icon/Icon.tsx'
 import { icons } from '@/common/ui/Icon/index.ts'
 
-import { formatAgo, isStale } from '../model/format.ts'
-import type { Offer, VerificationMethod } from '../model/offer.ts'
+import { formatAgo, formatVerificationMethod, isStale } from '../model/format.ts'
+import type { Offer } from '../model/offer.ts'
 import styles from './VerifiedMeta.module.css'
-
-const METHOD_LABEL: Record<VerificationMethod, string> = {
-  api: 'партнёрская сеть',
-  cart_test: 'тест в корзине',
-  crowd: 'отзывы пользователей',
-  manual: 'редакция',
-}
 
 export interface VerifiedMetaProps {
   offer: Pick<Offer, 'verification'>
@@ -26,7 +19,7 @@ export function VerifiedMeta({ offer, now, className }: VerifiedMetaProps) {
   const parts = [
     total > 0 ? `${success7d} из ${total} за 7 дней` : null,
     lastCheckedAt ? `Проверено ${formatAgo(lastCheckedAt, now)}` : null,
-    method ? METHOD_LABEL[method] : null,
+    formatVerificationMethod(method),
   ].filter(Boolean)
 
   return (

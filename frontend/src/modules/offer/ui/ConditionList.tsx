@@ -1,26 +1,24 @@
 import { useState } from 'react'
 
+import { plural, type PluralForms } from '@/common/plural.ts'
+
 import type { Condition } from '../model/conditions.ts'
 import { ConditionItem } from './ConditionItem.tsx'
 import styles from './ConditionList.module.css'
 
-const conditionsWord = (count: number) => {
-  const mod10 = count % 10
-  const mod100 = count % 100
-  if (mod10 === 1 && mod100 !== 11) return 'условие'
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'условия'
-  return 'условий'
-}
+const CONDITION_FORMS: PluralForms = { one: 'условие', few: 'условия', many: 'условий' }
 
 export interface ConditionListProps {
   conditions: Condition[]
   /** Items shown before «+N»; 4 by default (DESIGN_SPEC 3.15). */
   max?: number
+  /** Card layout: 2 columns from 520 px by default, 1 on the merchant page (DESIGN_SPEC 4.4). */
+  columns?: 1 | 2
   className?: string
 }
 
-/** Two columns from 520 px of card width; expanding shows the rest in place. */
-export function ConditionList({ conditions, max = 4, className }: ConditionListProps) {
+/** Expanding shows the rest in place, in the card's column layout. */
+export function ConditionList({ conditions, max = 4, columns = 2, className }: ConditionListProps) {
   const [expanded, setExpanded] = useState(false)
 
   if (conditions.length === 0) return null
@@ -30,7 +28,7 @@ export function ConditionList({ conditions, max = 4, className }: ConditionListP
 
   return (
     <div className={[styles.root, className].filter(Boolean).join(' ')}>
-      <ul className={styles.list}>
+      <ul className={styles.list} data-columns={columns}>
         {visible.map((condition) => (
           <ConditionItem key={`${condition.kind}-${condition.text}`} condition={condition} />
         ))}
@@ -42,7 +40,7 @@ export function ConditionList({ conditions, max = 4, className }: ConditionListP
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? 'Свернуть' : `+${hidden} ${conditionsWord(hidden)}`}
+          {expanded ? 'Свернуть' : `+${hidden} ${plural(hidden, CONDITION_FORMS)}`}
         </button>
       )}
     </div>

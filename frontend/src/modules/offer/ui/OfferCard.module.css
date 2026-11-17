@@ -1,5 +1,6 @@
 .root {
   display: flex;
+  position: relative;
   flex-direction: column;
   gap: var(--space-3);
   container-type: inline-size;
@@ -33,6 +34,24 @@
   justify-content: space-between;
   gap: var(--space-3);
   min-block-size: 32px;
+}
+
+.header[data-merchant-hidden] {
+  position: absolute;
+  inset-block-start: var(--space-4);
+  inset-inline-end: var(--space-4);
+  min-block-size: 0;
+}
+
+.root[data-context='merchant']:has(.ad) .value {
+  padding-inline-end: calc(var(--space-16) + var(--space-4));
+}
+
+@media (width >= 1024px) {
+  .header[data-merchant-hidden] {
+    inset-block-start: var(--space-5);
+    inset-inline-end: var(--space-5);
+  }
 }
 
 .merchant {

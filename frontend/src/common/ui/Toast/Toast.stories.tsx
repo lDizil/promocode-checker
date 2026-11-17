@@ -1,4 +1,4 @@
-import { expect, fn } from 'storybook/test'
+import { expect, fn, waitFor } from 'storybook/test'
 
 import preview from '#.storybook/preview'
 
@@ -51,7 +51,7 @@ export const Info = meta.story({
   play: async ({ canvas, userEvent }) => {
     toast.dismiss()
     await userEvent.click(canvas.getByRole('button', { name: 'Показать' }))
-    await expect(await canvas.findByText(MESSAGES.info)).toBeVisible()
+    await waitFor(() => expect(canvas.getByText(MESSAGES.info)).toBeVisible())
     toast.dismiss()
   },
 })
@@ -61,7 +61,7 @@ export const Success = meta.story({
   play: async ({ canvas, userEvent }) => {
     toast.dismiss()
     await userEvent.click(canvas.getByRole('button', { name: 'Показать' }))
-    await expect(await canvas.findByText(MESSAGES.success)).toBeVisible()
+    await waitFor(() => expect(canvas.getByText(MESSAGES.success)).toBeVisible())
     toast.dismiss()
   },
 })
@@ -71,7 +71,7 @@ export const Error = meta.story({
   play: async ({ canvas, userEvent }) => {
     toast.dismiss()
     await userEvent.click(canvas.getByRole('button', { name: 'Показать' }))
-    await expect(await canvas.findByText(MESSAGES.error)).toBeVisible()
+    await waitFor(() => expect(canvas.getByText(MESSAGES.error)).toBeVisible())
     toast.dismiss()
   },
 })
@@ -95,7 +95,7 @@ export const WithDescription = meta.story({
   play: async ({ canvas, userEvent }) => {
     toast.dismiss()
     await userEvent.click(canvas.getByRole('button', { name: 'Показать' }))
-    await expect(await canvas.findByText('Отправим, когда появится связь')).toBeVisible()
+    await waitFor(() => expect(canvas.getByText('Отправим, когда появится связь')).toBeVisible())
     toast.dismiss()
   },
 })
@@ -111,7 +111,17 @@ export const LongMessage = meta.story({
   play: async ({ canvas, userEvent }) => {
     toast.dismiss()
     await userEvent.click(canvas.getByRole('button', { name: 'Показать' }))
-    await expect(await canvas.findByText(/Не удалось отправить отзыв/)).toBeVisible()
+    await waitFor(() => expect(canvas.getByText(/Не удалось отправить отзыв/)).toBeVisible())
     toast.dismiss()
+  },
+})
+
+export const Dismiss = meta.story({
+  render: () => <Demo variant="info" />,
+  play: async ({ canvas, userEvent }) => {
+    toast.dismiss()
+    await userEvent.click(canvas.getByRole('button', { name: 'Показать' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Закрыть уведомление' }))
+    await waitFor(() => expect(canvas.queryByText(MESSAGES.info)).not.toBeInTheDocument())
   },
 })

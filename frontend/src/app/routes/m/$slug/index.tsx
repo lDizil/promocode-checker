@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 
 import { isNotFound } from '@/common/http.ts'
 import { merchantQueries } from '@/modules/merchant/index.ts'
+import { isConnectionOnline, OfflineDataUnavailableError } from '@/modules/network/index.ts'
 import { offerFiltersSearch, offerQueries } from '@/modules/offer/index.ts'
 import { MerchantPage, MerchantPageSkeleton } from '@/pages/merchant.tsx'
 
@@ -9,6 +10,13 @@ export const Route = createFileRoute('/m/$slug/')({
   validateSearch: offerFiltersSearch,
   loader: async ({ context: { queryClient }, params: { slug } }) => {
     try {
+      if (
+        !isConnectionOnline() &&
+        (queryClient.getQueryData(merchantQueries.detail(slug).queryKey) === undefined ||
+          queryClient.getQueryData(offerQueries.byMerchant(slug).queryKey) === undefined)
+      ) {
+        throw new OfflineDataUnavailableError()
+      }
       const [merchant] = await Promise.all([
         queryClient.ensureQueryData(merchantQueries.detail(slug)),
         queryClient.ensureQueryData(offerQueries.byMerchant(slug)),
@@ -42,6 +50,7 @@ function MerchantRoute() {
   const navigate = Route.useNavigate()
   return (
     <MerchantPage
+      key={slug}
       slug={slug}
       now={new Date(now)}
       filters={search}

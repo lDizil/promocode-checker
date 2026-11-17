@@ -224,6 +224,23 @@
       }
     }
   },
+  "color": {
+    "$type": "color",
+    "pressed-overlay": {
+      "$value": "{color.text}",
+      "$description": "Subtle pressed overlay derived from the current theme's text color.",
+      "$extensions": {
+        "app.alpha": 0.04
+      }
+    },
+    "pressed-overlay-strong": {
+      "$value": "{color.text}",
+      "$description": "Button pressed overlay derived from the current theme's text color.",
+      "$extensions": {
+        "app.alpha": 0.08
+      }
+    }
+  },
   "duration": {
     "$type": "duration",
     "fast": {

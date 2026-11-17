@@ -50,7 +50,23 @@ export const Clear = meta.story({
     await userEvent.type(input, 'Ozon')
     await userEvent.click(canvas.getByRole('button', { name: 'Очистить' }))
     await expect(input).toHaveValue('')
+    await expect(input).toHaveFocus()
     await expect(canvas.queryByRole('button', { name: 'Очистить' })).not.toBeInTheDocument()
+  },
+})
+
+export const KeyboardClear = meta.story({
+  args: { value: 'Самокат', onChange: fn(), onSubmit: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    const input = canvas.getByRole('searchbox')
+    await userEvent.click(input)
+    await userEvent.tab()
+    await expect(canvas.getByRole('button', { name: 'Очистить' })).toHaveFocus()
+    await userEvent.keyboard(' ')
+    await expect(input).toHaveValue('')
+    await expect(input).toHaveFocus()
+    await expect(args.onChange).toHaveBeenCalledWith('')
+    await expect(args.onSubmit).not.toHaveBeenCalled()
   },
 })
 

@@ -18,7 +18,7 @@
     border-color var(--duration-fast) var(--easing-out);
 
   &:active:not(:disabled) {
-    background-image: linear-gradient(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.04));
+    background-image: linear-gradient(var(--color-pressed-overlay), var(--color-pressed-overlay));
   }
 
   &[data-state='copied'] {
@@ -47,22 +47,13 @@
 
 .code {
   min-inline-size: 0;
-  font-family: var(--font-mono);
-  font-size: 18px;
-  line-height: 24px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
   overflow-wrap: anywhere;
 }
 
 .action {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   flex: none;
   color: var(--color-text-muted);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
 }

@@ -11,6 +11,7 @@ const offerKeyRoot = createQueryKeys('offer').all
 export function feedbackMutationOptions(queryClient: QueryClient, offerId: string) {
   return mutationOptions({
     mutationKey: ['offer', 'feedback', offerId],
+    networkMode: 'online',
     mutationFn: (feedback: FeedbackRequest) =>
       apiSend('POST', `/offers/${encodeURIComponent(offerId)}/feedback`, feedback, feedbackResponseDto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: offerKeyRoot }),

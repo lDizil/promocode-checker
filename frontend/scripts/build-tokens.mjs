@@ -1,11 +1,12 @@
-// Builds src/app/styles/tokens.css from the DTCG files in tokens/.
+// Builds tokens.css and favicon.svg from DTCG tokens and the shared Logo geometry.
 // Light values live on :root; dark values apply for [data-theme=dark] and for the system preference
 // unless the user forced light. Text styles become .text-* classes, mobile-first.
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import StyleDictionary from 'style-dictionary'
 
 const DESKTOP = '(width >= 1024px)'
 const OUT = new URL('../src/app/styles/tokens.css', import.meta.url)
+const FAVICON = new URL('../public/favicon.svg', import.meta.url)
 
 async function tokensOf(source) {
   const sd = new StyleDictionary({
@@ -18,7 +19,14 @@ async function tokensOf(source) {
   return allTokens
 }
 
-const decl = (token) => `  --${token.name}: ${token.$value};`
+const decl = (token) => {
+  const alpha = token.original.$extensions?.['app.alpha']
+  const value =
+    alpha === undefined
+      ? token.$value
+      : `color-mix(in srgb, var(--${token.original.$value.slice(1, -1).replaceAll('.', '-')}) ${alpha * 100}%, transparent)`
+  return `  --${token.name}: ${value};`
+}
 
 const base = await tokensOf(['tokens/base.json', 'tokens/color.light.json'])
 const dark = await tokensOf(['tokens/color.dark.json'])
@@ -78,3 +86,20 @@ const css = [
 
 await writeFile(OUT, css)
 console.log(`tokens.css: ${vars.length} variables, ${dark.length} dark overrides, ${typography.length} text styles`)
+
+const mark = JSON.parse(await readFile(new URL('../src/common/ui/Logo/mark.json', import.meta.url), 'utf8'))
+const faviconColors = (tokens) =>
+  ['color-primary', 'color-highlight']
+    .map((name) => `--${name}: ${tokens.find((token) => token.name === name).$value};`)
+    .join(' ')
+const favicon = `<svg xmlns="http://www.w3.org/2000/svg" width="${mark.width}" height="${mark.height}" viewBox="0 0 ${mark.width} ${mark.height}">
+  <style>
+    :root { ${faviconColors(base)} color: var(--color-primary); }
+    @media (prefers-color-scheme: dark) { :root { ${faviconColors(dark)} } }
+  </style>
+  <path d="${mark.mark}" fill="currentColor" />
+  <path d="${mark.check}" fill="none" stroke="var(--color-highlight)" stroke-width="${mark.strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
+`
+await writeFile(FAVICON, favicon)
+console.log('favicon.svg: shared 32px Logo mark, light and dark token colors')

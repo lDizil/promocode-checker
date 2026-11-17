@@ -28,7 +28,7 @@ export function MerchantTile({ merchant, offersCount, render, className }: Merch
   const content = (
     <>
       <MerchantAvatar name={merchant.name} logoUrl={merchant.logoUrl} size={48} />
-      <span className={[styles.name, 'text-body-sm'].join(' ')}>{merchant.name}</span>
+      <span className={[styles.name, 'text-body-sm-strong'].join(' ')}>{merchant.name}</span>
       <span className={[styles.offers, 'text-caption'].join(' ')}>{formatOffers(offersCount)}</span>
     </>
   )

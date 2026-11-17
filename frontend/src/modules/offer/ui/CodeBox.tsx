@@ -23,10 +23,10 @@ export function CodeBox({ code, state = 'default', onCopy }: CodeBoxProps) {
   return (
     <button type="button" className={styles.root} data-state={state} disabled={state === 'disabled'} onClick={onCopy}>
       <span className="visually-hidden">Промокод {spaced(code)}.</span>
-      <span className={styles.code} aria-hidden="true">
+      <span className={[styles.code, 'text-code'].join(' ')} aria-hidden="true">
         {code}
       </span>
-      <span className={styles.action}>
+      <span className={[styles.action, 'text-caption'].join(' ')}>
         <Icon icon={state === 'copied' ? icons.Check : icons.Copy} size={16} />
         <span className={styles.actionLabel} aria-live="polite">
           {state === 'copied' ? 'Скопировано' : 'Копировать'}

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { Input, InputClear, InputGroup } from '@ui-sdk/react/input'
 
 import { Icon } from '../Icon/Icon.tsx'
 import { Search, X } from '../Icon/icons.ts'
@@ -32,9 +32,6 @@ export function SearchField({
   variant = 'boxed',
   className,
 }: SearchFieldProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const hasValue = value !== ''
-
   return (
     <form
       className={[styles.field, className].filter(Boolean).join(' ')}
@@ -47,31 +44,23 @@ export function SearchField({
         onSubmit?.(value)
       }}
     >
-      <Icon icon={Search} size={20} className={styles.searchIcon} />
-      <input
-        ref={inputRef}
-        className={styles.input}
-        type="search"
-        value={value}
-        placeholder={placeholder}
-        aria-label={label}
-        autoComplete="off"
-        enterKeyHint="search"
-        onChange={(event) => onChange(event.target.value)}
-      />
-      {hasValue && (
-        <button
-          className={styles.clear}
-          type="button"
-          aria-label="Очистить"
-          onClick={() => {
-            onChange('')
-            inputRef.current?.focus()
-          }}
-        >
+      <InputGroup className={styles.group}>
+        <Icon icon={Search} size={20} className={styles.searchIcon} />
+        <Input
+          className={styles.input}
+          type="search"
+          name="q"
+          value={value}
+          placeholder={placeholder}
+          aria-label={label}
+          autoComplete="off"
+          enterKeyHint="search"
+          onValueChange={onChange}
+        />
+        <InputClear className={styles.clear} type="button" aria-label="Очистить">
           <Icon icon={X} size={16} />
-        </button>
-      )}
+        </InputClear>
+      </InputGroup>
     </form>
   )
 }

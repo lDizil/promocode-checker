@@ -5,10 +5,6 @@
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding-inline: var(--space-4);
-  font-family: var(--font-ui);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   transition: background-color var(--duration-fast) var(--easing-out);
@@ -57,9 +53,8 @@
     padding-inline: var(--space-2);
   }
 
-  /* pressed: 8% darker (DESIGN_SPEC 3.11) */
   &:active:not([data-disabled], [data-pending]) {
-    background-image: linear-gradient(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.08));
+    background-image: linear-gradient(var(--color-pressed-overlay-strong), var(--color-pressed-overlay-strong));
   }
 
   &[data-disabled] {

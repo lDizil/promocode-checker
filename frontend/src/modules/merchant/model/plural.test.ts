@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatActiveOffers, formatOffers, plural } from './plural.ts'
+import { plural } from '@/common/plural.ts'
+
+import { formatActiveOffers, formatOffers } from './plural.ts'
 
 describe('plural', () => {
   it('follows Russian plural rules for offer counts', () => {

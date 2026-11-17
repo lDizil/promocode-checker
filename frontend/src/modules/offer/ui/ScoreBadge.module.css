@@ -15,6 +15,9 @@
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-out),
+    color var(--duration-fast) var(--easing-out);
 
   /* 28 high; the pseudo-element keeps the tap zone at 44 (DESIGN_SPEC 1.8). */
   &::after {

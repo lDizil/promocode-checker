@@ -1,5 +1,6 @@
 // The DESIGN_SPEC 1.6 icon set. Other layers import icons from here, never from lucide-react (ADR 0002).
 export {
+  ArrowDown,
   ArrowLeft,
   ArrowUpDown,
   ArrowUpRight,

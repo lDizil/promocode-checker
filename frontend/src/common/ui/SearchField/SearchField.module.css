@@ -29,6 +29,14 @@
   }
 }
 
+.group {
+  display: flex;
+  align-items: center;
+  gap: inherit;
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
 .searchIcon {
   flex: none;
   color: var(--color-text-muted);
