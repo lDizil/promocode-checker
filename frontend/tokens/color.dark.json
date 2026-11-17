@@ -1,0 +1,93 @@
+{
+  "$description": "Figma Variables, collection color, mode Dark. Exported from Figma Variables 2026-11-16 (collections color / color-dark).",
+  "color": {
+    "$type": "color",
+    "bg": {
+      "$value": "#14130F"
+    },
+    "surface-1": {
+      "$value": "#221F18"
+    },
+    "surface-2": {
+      "$value": "#2D2920"
+    },
+    "neutral-bg": {
+      "$value": "#38322A"
+    },
+    "border": {
+      "$value": "#38332A"
+    },
+    "border-strong": {
+      "$value": "#F3EDDD"
+    },
+    "text": {
+      "$value": "#F3EDDD"
+    },
+    "text-muted": {
+      "$value": "#B3AB98"
+    },
+    "text-disabled": {
+      "$value": "#6E685A"
+    },
+    "primary": {
+      "$value": "#F3EDDD"
+    },
+    "on-primary": {
+      "$value": "#1C1A16"
+    },
+    "accent": {
+      "$value": "#9B7BD0"
+    },
+    "accent-text": {
+      "$value": "#C3A8F0"
+    },
+    "on-accent": {
+      "$value": "#1C1A16"
+    },
+    "highlight": {
+      "$value": "#FFBA1B"
+    },
+    "on-highlight": {
+      "$value": "#1C1A16"
+    },
+    "success": {
+      "$value": "#86C99A"
+    },
+    "success-bg": {
+      "$value": "#1F3326"
+    },
+    "warning": {
+      "$value": "#F0A35E"
+    },
+    "warning-bg": {
+      "$value": "#3B2614"
+    },
+    "danger": {
+      "$value": "#FF8A80"
+    },
+    "danger-bg": {
+      "$value": "#3E1D1A"
+    },
+    "dot-red": {
+      "$value": "#FF6B66"
+    },
+    "dot-yellow": {
+      "$value": "#FFBA1B"
+    },
+    "dot-purple": {
+      "$value": "#9B7BD0"
+    },
+    "dot-green": {
+      "$value": "#86C99A"
+    },
+    "ad": {
+      "$value": "#A39C8A"
+    },
+    "scrim": {
+      "$value": "rgba(0, 0, 0, 0.6)"
+    },
+    "tile-light": {
+      "$value": "#2D2920"
+    }
+  }
+}

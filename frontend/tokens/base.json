@@ -1,0 +1,286 @@
+{
+  "$description": "Figma Variables collection size and local text styles, exported 2026-11-16. Note: Figma text styles use Inter for display/h1/h2/tile/value (spec 1.4 says Inter Tight); Figma wins.",
+  "space": {
+    "$type": "dimension",
+    "1": {
+      "$value": "4px"
+    },
+    "2": {
+      "$value": "8px"
+    },
+    "3": {
+      "$value": "12px"
+    },
+    "4": {
+      "$value": "16px"
+    },
+    "5": {
+      "$value": "20px"
+    },
+    "6": {
+      "$value": "24px"
+    },
+    "8": {
+      "$value": "32px"
+    },
+    "10": {
+      "$value": "40px"
+    },
+    "12": {
+      "$value": "48px"
+    },
+    "16": {
+      "$value": "64px"
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "sm": {
+      "$value": "2px"
+    },
+    "md": {
+      "$value": "4px"
+    },
+    "xl": {
+      "$value": "16px"
+    },
+    "full": {
+      "$value": "999px"
+    }
+  },
+  "font": {
+    "$type": "fontFamily",
+    "display": {
+      "$value": ["Inter", "system-ui", "sans-serif"]
+    },
+    "ui": {
+      "$value": ["Inter", "system-ui", "sans-serif"]
+    },
+    "mono": {
+      "$value": ["JetBrains Mono", "ui-monospace", "monospace"]
+    }
+  },
+  "typography": {
+    "display": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.display}",
+        "fontSize": "48px",
+        "lineHeight": "52px",
+        "fontWeight": 500,
+        "letterSpacing": "-0.02em"
+      },
+      "$extensions": {
+        "app.mobile": {
+          "fontSize": "32px",
+          "lineHeight": "36px"
+        }
+      }
+    },
+    "h1": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.display}",
+        "fontSize": "32px",
+        "lineHeight": "38px",
+        "fontWeight": 500,
+        "letterSpacing": "-0.015em"
+      },
+      "$extensions": {
+        "app.mobile": {
+          "fontSize": "26px",
+          "lineHeight": "32px"
+        }
+      }
+    },
+    "h2": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.display}",
+        "fontSize": "22px",
+        "lineHeight": "28px",
+        "fontWeight": 500,
+        "letterSpacing": "-0.01em"
+      }
+    },
+    "tile": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.display}",
+        "fontSize": "20px",
+        "lineHeight": "22px",
+        "fontWeight": 500,
+        "letterSpacing": "-0.01em"
+      }
+    },
+    "value": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.display}",
+        "fontSize": "22px",
+        "lineHeight": "26px",
+        "fontWeight": 600,
+        "letterSpacing": "-0.01em"
+      }
+    },
+    "title": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "16px",
+        "lineHeight": "22px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      }
+    },
+    "body": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "15px",
+        "lineHeight": "22px",
+        "fontWeight": 400,
+        "letterSpacing": "0"
+      }
+    },
+    "body-sm": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "13px",
+        "lineHeight": "18px",
+        "fontWeight": 400,
+        "letterSpacing": "0"
+      }
+    },
+    "caption": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 500,
+        "letterSpacing": "0"
+      }
+    },
+    "overline": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 500,
+        "letterSpacing": "0"
+      }
+    },
+    "code": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.mono}",
+        "fontSize": "18px",
+        "lineHeight": "24px",
+        "fontWeight": 600,
+        "letterSpacing": "0.03em"
+      }
+    },
+    "button": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "14px",
+        "lineHeight": "20px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      }
+    },
+    "body-medium": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "15px",
+        "lineHeight": "22px",
+        "fontWeight": 500,
+        "letterSpacing": "0"
+      }
+    },
+    "body-sm-strong": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.ui}",
+        "fontSize": "13px",
+        "lineHeight": "18px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      }
+    },
+    "logo": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.mono}",
+        "fontSize": "22px",
+        "lineHeight": "28px",
+        "fontWeight": 700,
+        "letterSpacing": "-0.03em"
+      }
+    }
+  },
+  "color": {
+    "$type": "color",
+    "pressed-overlay": {
+      "$value": "{color.text}",
+      "$description": "Subtle pressed overlay derived from the current theme's text color.",
+      "$extensions": {
+        "app.alpha": 0.04
+      }
+    },
+    "pressed-overlay-strong": {
+      "$value": "{color.text}",
+      "$description": "Button pressed overlay derived from the current theme's text color.",
+      "$extensions": {
+        "app.alpha": 0.08
+      }
+    }
+  },
+  "duration": {
+    "$type": "duration",
+    "fast": {
+      "$value": "150ms"
+    },
+    "base": {
+      "$value": "250ms"
+    }
+  },
+  "easing": {
+    "$type": "cubicBezier",
+    "out": {
+      "$value": [0, 0, 0.58, 1]
+    }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "overlay": {
+      "$value": {
+        "color": "rgba(28, 26, 22, 0.14)",
+        "offsetX": "0px",
+        "offsetY": "12px",
+        "blur": "32px",
+        "spread": "0px"
+      }
+    }
+  },
+  "focus": {
+    "$type": "dimension",
+    "width": {
+      "$value": "2px"
+    },
+    "offset": {
+      "$value": "2px"
+    }
+  },
+  "tap": {
+    "$type": "dimension",
+    "min": {
+      "$value": "44px"
+    }
+  }
+}

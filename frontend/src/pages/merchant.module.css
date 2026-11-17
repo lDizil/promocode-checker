@@ -1,0 +1,96 @@
+.page {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-4);
+
+  @media (width >= 1024px) {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+    gap: var(--space-8);
+    padding: var(--space-2) var(--space-8) var(--space-8);
+  }
+}
+
+.main,
+.offers {
+  display: grid;
+  gap: var(--space-6);
+  min-inline-size: 0;
+}
+
+.toolbar {
+  position: sticky;
+  inset-block-start: 56px;
+  z-index: 1;
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  background: var(--color-bg);
+
+  @media (width >= 1024px) {
+    inset-block-start: 0;
+  }
+}
+
+.chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.listMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.offer {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.recommendation {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-accent-text);
+}
+
+.offer[data-recommended] article {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.aside {
+  display: grid;
+  gap: var(--space-6);
+
+  @media (width >= 1024px) {
+    position: sticky;
+    inset-block-start: var(--space-8);
+  }
+}
+
+.panel {
+  padding: var(--space-4);
+  background: var(--color-surface-1);
+  border-radius: var(--radius-md);
+
+  @media (width >= 1024px) {
+    padding: var(--space-5);
+  }
+}
+
+@media (width >= 1024px) {
+  .aside > :last-child {
+    display: none;
+  }
+}

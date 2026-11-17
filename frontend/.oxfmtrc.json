@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 120,
+  "semi": false,
+  "singleQuote": true,
+  "ignorePatterns": [
+    "src/app/routeTree.gen.ts",
+    "src/app/styles/tokens.css",
+    "public/mockServiceWorker.js",
+    "pnpm-lock.yaml"
+  ]
+}

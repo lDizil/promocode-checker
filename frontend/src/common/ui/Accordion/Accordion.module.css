@@ -1,0 +1,49 @@
+.root {
+  display: grid;
+}
+
+.item {
+  border-block-start: 1px solid var(--color-border);
+}
+
+.item:last-child {
+  border-block-end: 1px solid var(--color-border);
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  inline-size: 100%;
+  min-block-size: var(--tap-min);
+  padding: var(--space-4) 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  text-align: start;
+  cursor: pointer;
+}
+
+.question {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.chevron {
+  flex: none;
+  transition: rotate var(--duration-fast) var(--easing-out);
+}
+
+.trigger[data-open] .chevron {
+  rotate: 180deg;
+}
+
+.panel {
+  padding-block-end: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.panel p + p {
+  margin-block-start: var(--space-2);
+}

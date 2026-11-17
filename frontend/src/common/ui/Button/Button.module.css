@@ -1,0 +1,102 @@
+.button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding-inline: var(--space-4);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-out);
+  /* sm is 36 high; the pseudo-element keeps the tap zone at 44 (DESIGN_SPEC 1.8). */
+  &[data-size='sm']::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+
+  &[data-size='lg'] {
+    min-height: 52px;
+    padding-inline: var(--space-6);
+  }
+  &[data-size='md'] {
+    min-height: 44px;
+  }
+  &[data-size='sm'] {
+    min-height: 36px;
+    padding-inline: var(--space-3);
+  }
+
+  &[data-variant='primary'] {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  &[data-variant='on-highlight'] {
+    background: var(--color-surface-2);
+    color: var(--color-text);
+  }
+  &[data-variant='secondary'] {
+    background: transparent;
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+  }
+  &[data-variant='ghost'] {
+    background: transparent;
+    color: var(--color-text);
+    padding-inline: var(--space-2);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  &[data-variant='danger-ghost'] {
+    background: transparent;
+    color: var(--color-danger);
+    padding-inline: var(--space-2);
+  }
+
+  &:active:not([data-disabled], [data-pending]) {
+    background-image: linear-gradient(var(--color-pressed-overlay-strong), var(--color-pressed-overlay-strong));
+  }
+
+  &[data-disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  &[data-pending] {
+    cursor: progress;
+  }
+}
+
+.block {
+  display: grid;
+  inline-size: 100%;
+}
+
+/* Spinner and content share one grid cell, so the width does not jump while pending. */
+.content,
+.spinner {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* opacity, not visibility: the label must stay the button's accessible name while pending. */
+.button:not([data-pending]) .spinner,
+.button[data-pending] .content {
+  opacity: 0;
+}
+
+.spinner svg {
+  animation: spin 1s linear infinite;
+}
+
+.iconOnly {
+  padding-inline: 0;
+  aspect-ratio: 1;
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}

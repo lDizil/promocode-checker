@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <style>
+    :root { --color-primary: #2c2c2a; --color-highlight: #ffba1b; color: var(--color-primary); }
+    @media (prefers-color-scheme: dark) { :root { --color-primary: #f3eddd; --color-highlight: #ffba1b; } }
+  </style>
+  <path d="M4 0H28C29.0609 0 30.0783 0.421427 30.8284 1.17157C31.5786 1.92172 32 2.93913 32 4V12C30.9391 12 29.9217 12.4214 29.1716 13.1716C28.4214 13.9217 28 14.9391 28 16C28 17.0609 28.4214 18.0783 29.1716 18.8284C29.9217 19.5786 30.9391 20 32 20V28C32 29.0609 31.5786 30.0783 30.8284 30.8284C30.0783 31.5786 29.0609 32 28 32H4C2.93913 32 1.92172 31.5786 1.17157 30.8284C0.421427 30.0783 0 29.0609 0 28V20C1.06087 20 2.07828 19.5786 2.82843 18.8284C3.57857 18.0783 4 17.0609 4 16C4 14.9391 3.57857 13.9217 2.82843 13.1716C2.07828 12.4214 1.06087 12 0 12L0 4C0 2.93913 0.421427 1.92172 1.17157 1.17157C1.92172 0.421427 2.93913 0 4 0Z" fill="currentColor" />
+  <path d="M10 16.5L14.5 21L22.5 11.5" fill="none" stroke="var(--color-highlight)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -1,0 +1,56 @@
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: 40px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--easing-out),
+    color var(--duration-fast) var(--easing-out);
+
+  &:hover {
+    background: var(--color-surface-1);
+    color: var(--color-text);
+  }
+
+  &[data-active] {
+    color: var(--color-text);
+  }
+}
+
+.lg {
+  min-block-size: 52px;
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  transition:
+    background-color var(--duration-fast) var(--easing-out),
+    color var(--duration-fast) var(--easing-out);
+}
+
+.link[data-active] .icon {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.label {
+  min-inline-size: 0;
+}
+
+.link[data-active] .label {
+  font-weight: 500;
+}

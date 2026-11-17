@@ -8,6 +8,12 @@ node_modules/
 dist/
 build/
 coverage/
+.output/
+.nitro/
+.tanstack/
+storybook-static/
+__screenshots__/
+frontend/src/app/routeTree.gen.ts
 
 # Backend and tools
 bin/

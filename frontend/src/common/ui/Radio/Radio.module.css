@@ -1,0 +1,55 @@
+.group {
+  display: grid;
+  inline-size: 100%;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: var(--tap-min);
+  padding-block: var(--space-2);
+  cursor: pointer;
+}
+
+.option[data-disabled],
+.option:has([data-disabled]) {
+  cursor: not-allowed;
+}
+
+.radio {
+  flex: none;
+  inline-size: 20px;
+  block-size: 20px;
+  padding: 0;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  cursor: inherit;
+  transition:
+    border-color var(--duration-fast) var(--easing-out),
+    border-width var(--duration-fast) var(--easing-out);
+}
+
+/* Checked: a 6 px ring, the inner dot shows the surface through it (DESIGN_SPEC 3.44). */
+.radio[data-checked] {
+  border: 6px solid var(--color-primary);
+}
+
+.radio[data-disabled] {
+  border-color: var(--color-text-disabled);
+}
+
+/* The ring itself is the marker; the ui-sdk dot only holds animation state. */
+.radio [data-slot='radio-indicator'] {
+  display: none;
+}
+
+.label {
+  min-inline-size: 0;
+}
+
+.option[data-disabled] .label,
+.option:has([data-disabled]) .label {
+  color: var(--color-text-disabled);
+}

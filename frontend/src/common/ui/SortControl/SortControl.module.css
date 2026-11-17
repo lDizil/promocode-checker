@@ -1,0 +1,69 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-inline-size: 100%;
+  min-block-size: var(--tap-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.trigger[data-open] svg {
+  color: var(--color-accent-text);
+}
+
+.trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content {
+  min-inline-size: 220px;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  box-shadow: var(--shadow-overlay);
+  font-family: var(--font-ui);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.item[data-highlighted] {
+  background: var(--color-surface-1);
+}
+
+.item[data-checked] {
+  font-weight: 600;
+}
+
+.indicator {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 16px;
+  block-size: 16px;
+  flex: none;
+}
+
+.item[data-unchecked] .indicator {
+  visibility: hidden;
+}

@@ -1,0 +1,30 @@
+.root {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-8);
+  text-align: center;
+}
+
+.art {
+  display: grid;
+  place-items: end center;
+  inline-size: 160px;
+  block-size: 120px;
+  border-block-start: 2px solid var(--color-highlight);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  margin-block-end: var(--space-2);
+}
+
+.description {
+  max-inline-size: 40ch;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-block-start: var(--space-2);
+}

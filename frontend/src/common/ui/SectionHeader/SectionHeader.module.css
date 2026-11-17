@@ -1,0 +1,34 @@
+.root {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-4);
+}
+
+.root > :first-child {
+  min-inline-size: 0;
+}
+
+.action {
+  flex: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+
+.action a,
+.action button {
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.action a:hover,
+.action button:hover {
+  color: var(--color-text);
+}
