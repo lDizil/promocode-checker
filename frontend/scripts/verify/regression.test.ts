@@ -45,6 +45,35 @@ test('detects an off-center icon rather than trusting the screenshot reviewer', 
   assert.ok(violations.introduced.some((v) => v.title.includes('icon-off-center') && v.title.includes('Sidebar')))
 })
 
+test('a clipped menu label does not turn an icon-and-text link into an icon-only control', async () => {
+  await page.setContent(`<!doctype html><html><body>
+    <div style="width:48px;overflow:hidden">
+      <a href="/" style="display:flex;align-items:center;gap:64px;width:280px;height:44px">
+        <svg style="width:20px;height:20px;flex:none"><path d="M1 1h18v18H1z"/></svg>
+        <span>Главная</span>
+      </a>
+    </div>
+  </body></html>`)
+  const audit = await page.evaluate(auditPage, null)
+  assert.equal(audit.violations.filter((v) => v.rule === 'icon-off-center').length, 0)
+})
+
+test('hidden accessibility labels do not exempt an off-center icon-only control', async () => {
+  for (const hidden of ['display:none', 'position:absolute;width:1px;height:1px;overflow:hidden']) {
+    await page.setContent(`<!doctype html><html><body>
+      <button aria-label="Меню" style="display:flex;align-items:center;justify-content:start;width:80px;height:44px">
+        <svg style="width:20px;height:20px"><path d="M1 1h18v18H1z"/></svg>
+        <span style="${hidden}">Меню</span>
+      </button>
+    </body></html>`)
+    const audit = await page.evaluate(auditPage, null)
+    assert.ok(
+      audit.violations.some((v) => v.rule === 'icon-off-center'),
+      hidden,
+    )
+  }
+})
+
 test('detects visual glyph changes when geometry and accessible labels stay the same', async () => {
   const base = new PNG({ width: 32, height: 32 })
   base.data.fill(255)

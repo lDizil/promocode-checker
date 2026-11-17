@@ -166,7 +166,16 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
   function hasVisibleText(el: Element): boolean {
     if (directText(el) !== '') return true
     for (const node of el.querySelectorAll('*')) {
-      if (directText(node) !== '' && visible(node)) return true
+      // Classify by rendered content, not its current viewport/ancestor clipping. During a
+      // drawer's entry the icon can be on-screen before its label without becoming icon-only.
+      const rect = rectOf(node)
+      if (
+        directText(node) !== '' &&
+        rect.width > 1 &&
+        rect.height > 1 &&
+        node.checkVisibility({ visibilityProperty: true })
+      )
+        return true
     }
     return false
   }

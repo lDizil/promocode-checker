@@ -4,15 +4,17 @@ BR-813 «Цикл проверки UI для агентов», ветка `BR-81
 
 После CI: исправлено форматирование `frontend/AGENTS.md` (`d7dc6ad`). В `FailReasonSheet/Other Selected` мгновенный `toBeVisible` заменён ожиданием видимости: наличие textarea в DOM не означает завершения стартового скрытого состояния Sheet. Проверены 6 сторис этого файла, scoped lint/format; в omp-owned Chromium на 390×844 реальный выбор «Другое» показал поле, before/after просмотрены, console errors нет.
 
+Следующее CI-падение `AppShell/Mobile` выявило ложное `icon-off-center`: классификация ссылок ошибочно зависела от обрезки их текста во время въезда drawer. Исправлено определение текстового контрола независимо от временного clipping; добавлены регрессии на обрезанную метку и сохранение проверки icon-only с hidden/screen-reader меткой. Локально прошли 21 тест верификатора, 272 stories, typecheck, полный lint и format:check; реальное закрытие/открытие меню на 390×844 даёт 0 нарушений.
+
 Решение: существующий Playwright используется для снимков базовой версии (`HEAD` по умолчанию, отдельный временный worktree) и рабочего дерева. Текстовый diff геометрии/иконок/стилей и pixel diff не зависят от способности модели заметить дефект на скриншоте. Storybook остаётся компонентным уровнем, ручное прохождение изменённого сценария обязательно. Gate связывает staged-код и инструменты проверки со свежим stamp. Намеренные отличия требуют отдельных причин; частичные прогоны не дают stamp. Глобальный `ui-testing` дополнен правилом before/after и проверки соседних элементов.
 
 # Next step
 
-Ревью/merge BR-813; после merge перевести задачу в Fixed (Verified — человек). Локальные hooks установлены (`core.hooksPath=.githooks`, default enforce). Для следующего UI/tooling-коммита заново `cd frontend && pnpm verify:ui`: stamp предыдущего HEAD после коммита устареет. Реальный browser smoke: merchant 390 dark, 1440 light, открытие menu/filter; свежие кадры просмотрены, финальные runner-кадры menu light и merchant desktop dark просмотрены. Документация: `frontend/docs/VERIFY.md`, skill `.agents/skills/verify`.
+После push дождаться CI **последнего SHA** в PR #9 (`gh run watch <id> --exit-status`), проверить итог и visual observe step; не считать локальные проверки завершением задачи. Затем ревью/merge BR-813, после merge Fixed (Verified — человек). Hooks: `core.hooksPath=.githooks`, default enforce; перед следующим UI/tooling-коммитом заново `cd frontend && pnpm verify:ui`.
 
 # Known issues
 
-Runtime-baseline не является эталоном соответствия Figma. Local Git hooks не являются защищённой CI-границей; владелец клона может обойти их. CI visual comparison работает в observe, артефакты требуют ревью. Пользователь сообщил о падениях format:check и Other Selected; оба исправлены, итоговый удалённый CI после этих исправлений ещё не подтверждён.
+Runtime-baseline не является эталоном соответствия Figma. Local Git hooks не являются защищённой CI-границей; владелец клона может обойти их. CI visual comparison работает в observe, артефакты требуют ревью. Итоговый удалённый CI последнего исправления ещё ожидается.
 
 # Rejected
 
