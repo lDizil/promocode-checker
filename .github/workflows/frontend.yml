@@ -2,10 +2,14 @@ name: frontend
 
 on:
   pull_request:
-    paths: ['frontend/**', '.github/workflows/frontend.yml']
+    paths: ['frontend/**', '.githooks/**', '.github/workflows/frontend.yml']
   push:
     branches: [main]
-    paths: ['frontend/**', '.github/workflows/frontend.yml']
+    paths: ['frontend/**', '.githooks/**', '.github/workflows/frontend.yml']
+
+concurrency:
+  group: frontend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
   run:
@@ -16,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           package_json_file: frontend/package.json
@@ -29,8 +35,36 @@ jobs:
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm lint --deny-warnings
+      - run: pnpm lint:tokens
       - run: pnpm format:check
       - run: pnpm test
       - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:verify
       - run: pnpm test:stories
       - run: pnpm build-storybook --quiet
+      # Visual changes need a human decision: publish evidence, do not silently bless a new baseline.
+      - name: Compare UI with base (observe)
+        if: github.event_name == 'pull_request'
+        id: ui
+        continue-on-error: true
+        env:
+          UI_BASE: ${{ github.event.pull_request.base.sha }}
+        run: pnpm verify:ui --base "$UI_BASE"
+      - name: Publish UI evidence
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-verification
+          path: frontend/.verify/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Report visual comparison outcome
+        if: always() && github.event_name == 'pull_request'
+        env:
+          UI_OUTCOME: ${{ steps.ui.outcome }}
+        run: |
+          if [ "$UI_OUTCOME" != "success" ]; then
+            echo "::warning title=UI comparison (observe)::Visual/layout differences detected ($UI_OUTCOME). Inspect the ui-verification artifact."
+          fi
+          echo "UI comparison (observe): $UI_OUTCOME. Review ui-verification artifact; success is not Figma approval." >> "$GITHUB_STEP_SUMMARY"
