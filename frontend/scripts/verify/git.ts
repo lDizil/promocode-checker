@@ -78,7 +78,6 @@ export const stampPath = () => join(verifyDir(), 'stamp.json')
 const under = (path: string, roots: readonly string[]) =>
   roots.some((directory) => path === directory || path.startsWith(`${directory}/`))
 
-export const isUiFile = (path: string) => under(path, UI_PATHS) && !NOT_FINGERPRINTED.test(path)
 export const isFingerprintFile = (path: string) => under(path, FINGERPRINT_PATHS) && !NOT_FINGERPRINTED.test(path)
 
 export type FingerprintSource = 'worktree' | 'index'
@@ -138,11 +137,6 @@ const pathFromRecord = (record: string): string => {
   return tab < 0 ? '' : record.slice(tab + 1)
 }
 
-export const stagedUiFiles = () =>
-  [...new Set(gitPaths(['diff', '--cached', '--name-only', '--no-renames', '-z', '--', ...UI_PATHS]))]
-    .filter(isUiFile)
-    .toSorted()
-
 export const stagedFingerprintFiles = () =>
   [...new Set(gitPaths(['diff', '--cached', '--name-only', '--no-renames', '-z', '--', ...FINGERPRINT_PATHS]))]
     .filter(isFingerprintFile)
@@ -174,7 +168,6 @@ const stampSchema = z.object({
 })
 
 export type Stamp = z.infer<typeof stampSchema>
-export type StampAccepted = Stamp['accepted'][number]
 
 /** Parses the stamp-file boundary: malformed JSON/schema is an error, never a missing stamp. */
 export function validateStamp(value: unknown): Stamp {
@@ -196,13 +189,6 @@ export function writeStamp(stamp: Stamp, path = stampPath()): void {
   const checked = validateStamp(stamp)
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, `${JSON.stringify(checked, null, 2)}\n`, 'utf8')
-}
-
-/** The revision the verified worktree was based on. */
-export function headRevision(): Stamp['base'] {
-  const sha = git(['rev-parse', '--verify', 'HEAD'])
-  const ref = gitOptional(['symbolic-ref', '--short', '--quiet', 'HEAD']) ?? sha
-  return { ref, sha }
 }
 
 /** Resolves a ref/HEAD/abbreviated SHA to the full commit id it points at now. */
@@ -231,19 +217,4 @@ export function isAncestor(ancestor: string, descendant = 'HEAD'): boolean {
     if (exitStatus(error) === 1) return false
     throw error
   }
-}
-
-/**
- * Writes the stamp after a successful verification run. Parent runners should call this only when
- * every scenario was captured and every accepted change has an id, title and reason.
- */
-export function stampVerification(accepted: Stamp['accepted']): Stamp {
-  const stamp: Stamp = {
-    fingerprint: uiFingerprint('worktree'),
-    base: headRevision(),
-    accepted,
-    createdAt: new Date().toISOString(),
-  }
-  writeStamp(stamp)
-  return stamp
 }

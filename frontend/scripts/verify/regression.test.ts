@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { after, before, test } from 'node:test'
 import { chromium, type Browser, type Page } from 'playwright'
 import { PNG } from 'pngjs'
-import { auditPage } from './audit.ts'
+
+import { auditPage, type PageAudit } from './audit.ts'
 import { diffLayout, diffViolations } from './diff.ts'
 import { diffPixels } from './pixels.ts'
+import { readBaseScenarioNames } from './run.ts'
 
 let browser: Browser
 let page: Page
@@ -71,6 +76,71 @@ test('hidden accessibility labels do not exempt an off-center icon-only control'
       audit.violations.some((v) => v.rule === 'icon-off-center'),
       hidden,
     )
+  }
+})
+
+test('detects text clipped by an ancestor or inside an element that also has an icon child', async () => {
+  await page.setContent(`<!doctype html><html><body style="margin:0">
+    <div style="width:60px;overflow:hidden;white-space:nowrap">
+      <span>Очень длинный текст заголовка</span>
+    </div>
+    <button style="display:inline-flex;align-items:center;gap:4px;width:64px;overflow:hidden;white-space:nowrap">
+      <svg style="width:16px;height:16px;flex:none"><path d="M1 1h14v14H1z"/></svg>
+      Применить длинный код
+    </button>
+  </body></html>`)
+  const audit = await page.evaluate(auditPage, null)
+  const clipped = audit.violations.filter((v) => v.rule === 'text-clipped')
+  assert.ok(clipped.some((v) => v.key.includes('Очень длинный текст')))
+  assert.ok(clipped.some((v) => v.key.includes('Применить длинный код')))
+})
+
+test('viewportOnly excludes elements below the viewport when auditing modal states', async () => {
+  await page.setContent(`<!doctype html><html><body style="margin:0">
+    <div style="height:200px"><span>Видимый блок</span></div>
+    <div style="margin-top:1200px"><span>Скрытый за экраном</span></div>
+  </body></html>`)
+  const full = await page.evaluate(auditPage, { viewportOnly: false })
+  const viewport = await page.evaluate(auditPage, { viewportOnly: true })
+  assert.ok(full.elements.some((el) => el.key.includes('Скрытый за экраном')))
+  assert.ok(!viewport.elements.some((el) => el.key.includes('Скрытый за экраном')))
+  assert.ok(viewport.elements.some((el) => el.key.includes('Видимый блок')))
+})
+
+test('worsened violations are reported as introduced rather than hidden as preexisting', () => {
+  const base: PageAudit = {
+    elements: [],
+    docWidth: 410,
+    docHeight: 844,
+    violations: [{ rule: 'page-overflow-x', key: 'document', message: 'горизонтальный скролл: 410 > 390 px' }],
+  }
+  const head: PageAudit = {
+    elements: [],
+    docWidth: 620,
+    docHeight: 844,
+    violations: [{ rule: 'page-overflow-x', key: 'document', message: 'горизонтальный скролл: 620 > 390 px' }],
+  }
+  const diff = diffViolations(base, head)
+  assert.equal(diff.introduced.length, 1)
+  assert.match(diff.introduced[0]!.title, /620 > 390/)
+  assert.equal(diff.preexisting.length, 0)
+  assert.equal(diff.fixed.length, 0)
+})
+
+test('readBaseScenarioNames extracts scenario names from base worktree or returns undefined when absent', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'verify-scenarios-'))
+  try {
+    assert.equal(readBaseScenarioNames(dir), undefined)
+    const scenariosFile = join(dir, 'frontend', 'scripts', 'verify', 'scenarios.ts')
+    mkdirSync(join(dir, 'frontend', 'scripts', 'verify'), { recursive: true })
+    writeFileSync(
+      scenariosFile,
+      `export const scenarios = [{ name: 'home', path: '/' }, { name: "menu-open", path: '/m/samokat' }]\n`,
+    )
+    const names = readBaseScenarioNames(dir)
+    assert.deepEqual([...(names ?? [])].toSorted(), ['home', 'menu-open'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
   }
 })
 

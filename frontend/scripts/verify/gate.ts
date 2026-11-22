@@ -52,9 +52,9 @@ export interface GateResult {
 }
 
 const HOOKS_DIR = '.githooks'
-const HOOKS = ['pre-commit', 'prepare-commit-msg'] as const
+const HOOKS = ['pre-commit', 'prepare-commit-msg', 'commit-msg'] as const
 const STAMP_FILE = 'frontend/.verify/stamp.json'
-const MANAGED_TRAILER = /^Verified-(?:Fingerprint|Base|At|Change):/m
+const MANAGED_TRAILER_LINE = /^Verified-(?:Fingerprint|Base|At|Change):/
 
 const errorText = (error: unknown): string => (error instanceof Error ? error.message : String(error))
 
@@ -266,11 +266,14 @@ export function verificationTrailers(stamp: Stamp): string[] {
   ]
 }
 
+export type TrailerOutcome = 'added' | 'updated' | 'unchanged' | 'skipped-empty'
+
 /**
- * Inserts the trailer block after the message body and before trailing comment/scissors lines.
- * Existing managed trailers are left untouched, and an empty body is not turned into a message.
+ * Inserts or updates the managed `Verified-*` trailer block after the message body and before
+ * trailing comment/scissors lines. An empty body is left untouched so interactive commits can abort;
+ * stale trailers from `--amend` are replaced with the fresh stamp's trailers.
  */
-export function appendVerificationTrailers(path: string, stamp: Stamp): 'added' | 'skipped-existing' | 'skipped-empty' {
+export function appendVerificationTrailers(path: string, stamp: Stamp): TrailerOutcome {
   const lines = readFileSync(path, 'utf8').split(/\r?\n/)
   let bodyEnd = lines.length
   while (bodyEnd > 0) {
@@ -284,37 +287,52 @@ export function appendVerificationTrailers(path: string, stamp: Stamp): 'added' 
   const bodyLines = lines.slice(0, bodyEnd)
   while (bodyLines.length > 0 && (bodyLines.at(-1) ?? '').trim() === '') bodyLines.pop()
   if (bodyLines.every((line) => line.trim() === '')) return 'skipped-empty'
-  const body = bodyLines.join('\n')
-  if (MANAGED_TRAILER.test(body)) return 'skipped-existing'
+
+  const existingManaged = bodyLines.filter((line) => MANAGED_TRAILER_LINE.test(line))
+  const desired = verificationTrailers(stamp)
+  if (existingManaged.length === desired.length && existingManaged.every((line, index) => line === desired[index])) {
+    return 'unchanged'
+  }
+
+  const cleanBody = bodyLines.filter((line) => !MANAGED_TRAILER_LINE.test(line))
+  while (cleanBody.length > 0 && (cleanBody.at(-1) ?? '').trim() === '') cleanBody.pop()
+  if (cleanBody.every((line) => line.trim() === '')) return 'skipped-empty'
 
   const comments = lines.slice(bodyEnd)
-  let next = `${body}\n\n${verificationTrailers(stamp).join('\n')}\n`
+  let next = `${cleanBody.join('\n')}\n\n${desired.join('\n')}\n`
   if (comments.length > 0) next += `\n${comments.join('\n').replace(/\s+$/, '')}\n`
   writeFileSync(path, next, 'utf8')
-  return 'added'
+  return existingManaged.length > 0 ? 'updated' : 'added'
 }
 
-export function runPrepareCommitMsg(args: string[], mode: GateMode = readGateMode()): number {
-  const [messagePath, source] = args
-  if (!messagePath) throw new Error('prepare-commit-msg: git не передал путь к файлу сообщения')
-  if (source === 'merge' || mode !== 'enforce') return 0
-
+function syncCommitTrailers(messagePath: string, hookName: string, mode: GateMode): number {
+  if (mode !== 'enforce') return 0
   const result = evaluateGate(mode)
   if (!result.verified || !result.stamp) {
     if (result.files.length > 0) {
       process.stderr.write(
-        `verify gate: трейлеры не добавлены (${result.reason}); коммит создаётся в обход проверки.\n`,
+        `verify gate (${hookName}): трейлеры не добавлены (${result.reason}); коммит создаётся в обход проверки.\n`,
       )
     }
     return 0
   }
 
   const file = isAbsolute(messagePath) ? messagePath : resolve(repoRoot(), messagePath)
-  const outcome = appendVerificationTrailers(file, result.stamp)
-  if (outcome === 'skipped-existing') {
-    process.stderr.write('verify gate: в сообщении уже есть Verified-трейлеры, оставляю как есть.\n')
-  }
+  appendVerificationTrailers(file, result.stamp)
   return 0
+}
+
+export function runPrepareCommitMsg(args: string[], mode: GateMode = readGateMode()): number {
+  const [messagePath, source] = args
+  if (!messagePath) throw new Error('prepare-commit-msg: git не передал путь к файлу сообщения')
+  if (source === 'merge') return 0
+  return syncCommitTrailers(messagePath, 'prepare-commit-msg', mode)
+}
+
+export function runCommitMsg(args: string[], mode: GateMode = readGateMode()): number {
+  const [messagePath] = args
+  if (!messagePath) throw new Error('commit-msg: git не передал путь к файлу сообщения')
+  return syncCommitTrailers(messagePath, 'commit-msg', mode)
 }
 
 /** Explicit, local-only installation. Never overwrites a custom core.hooksPath. */
@@ -356,6 +374,7 @@ const USAGE = `verify gate — не даёт закоммитить UI/пров�
 Команды (вызываются git-хуками):
   pre-commit
   prepare-commit-msg <файл-сообщения> <источник> [sha]
+  commit-msg <файл-сообщения>
 
 Диагностика и установка:
   fingerprint [worktree|index]   напечатать текущий fingerprint
@@ -419,6 +438,14 @@ function main(argv: string[]): number {
     if (args[1] === 'merge') return 0
     try {
       return runPrepareCommitMsg(args, mode)
+    } catch (error) {
+      process.stderr.write(`verify gate: ошибка: ${errorText(error)}\n`)
+      return mode === 'observe' ? 0 : 1
+    }
+  }
+  if (command === 'commit-msg') {
+    try {
+      return runCommitMsg(args, mode)
     } catch (error) {
       process.stderr.write(`verify gate: ошибка: ${errorText(error)}\n`)
       return mode === 'observe' ? 0 : 1

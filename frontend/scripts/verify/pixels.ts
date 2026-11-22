@@ -1,7 +1,7 @@
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
 
-import type { Rect } from './diff.ts'
+import { unionRect, type Rect } from './diff.ts'
 
 const CELL = 16
 
@@ -81,17 +81,9 @@ function pad(png: PNG, width: number, height: number): PNG {
 export function beforeAfter(basePng: Buffer, headPng: Buffer, base: Rect | undefined, head: Rect | undefined): Buffer {
   const left = PNG.sync.read(basePng)
   const right = PNG.sync.read(headPng)
-  const area = base ?? head!
-  const other = head ?? base!
-  const box = expand(
-    {
-      x: Math.min(area.x, other.x),
-      y: Math.min(area.y, other.y),
-      w: Math.max(area.x + area.w, other.x + other.w) - Math.min(area.x, other.x),
-      h: Math.max(area.y + area.h, other.y + other.h) - Math.min(area.y, other.y),
-    },
-    24,
-  )
+  const combined = unionRect([base, head].filter((rect): rect is Rect => rect !== undefined))
+  if (!combined) throw new Error('beforeAfter требует хотя бы один прямоугольник')
+  const box = expand(combined, 24)
   const a = crop(left, box)
   const b = crop(right, box)
   const scale = box.w < 240 && box.h < 240 ? 3 : box.w < 480 ? 2 : 1

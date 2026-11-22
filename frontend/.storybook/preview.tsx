@@ -14,8 +14,10 @@ import { auditPage, type Rule } from '../scripts/verify/audit.ts'
 export const STORY_NOW = new Date('2026-11-16T12:00:00+03:00')
 
 /**
- * Reliable subset of `auditPage`: geometry and loading failures, no design-scale or colour
- * judgement. The full rationale for excluded rules is in `scripts/verify/audit.ts`.
+ * Component-level runtime invariants checked after every story renders.
+ * `page-overflow-x` belongs to full-page viewports in `pnpm verify:ui` (desktop stories such as
+ * `AppShell` render 1440 px containers inside Vitest's narrower iframe).
+ * Colour tokens are checked statically by `pnpm lint:tokens` (including stories).
  */
 const STORY_RULES = ['icon-off-center', 'text-clipped', 'broken-image'] as const satisfies readonly Rule[]
 

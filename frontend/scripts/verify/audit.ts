@@ -1,19 +1,20 @@
 /* eslint-disable unicorn/consistent-function-scoping -- page.evaluate serializes auditPage; helpers must be inside it. */
 /**
- * Browser-side layout audit, shared by `pnpm verify:ui` (`page.evaluate(auditPage)`) and the
+ * Browser-side layout audit, shared by `pnpm verify:ui` (`page.evaluate(auditPage, …)`) and the
  * Storybook `afterEach` invariant check.
  *
  * `auditPage` must stay self-contained: Playwright serialises it with `toString()`, so every helper
  * lives inside the function body. Types are stripped before serialisation.
  *
- * Only invariants that do not require design judgement run at runtime. Deliberately not evaluated
- * here (the `Rule` union keeps their names so stored reports stay readable):
- * - `icon-misaligned`/`text-overflow`/`overlap` — intent depends on composition, stacking and
- *   negative margins; pixel diff in `pnpm verify:ui` reports the change without guessing.
- * - `color-not-token` — computed colours are affected by opacity, blending and `color-mix()`;
- *   `scripts/verify/token-lint.ts` checks the source literally instead.
- * - `font-not-in-scale`/`tap-target-small` — computed values vary with inherited defaults and
- *   Figma-derived sizes; the feature's own story/a11y checks own those design rules.
+ * Only invariants that do not require design judgement run at runtime:
+ * - `icon-off-center`: icon-only interactive controls must centre their icon within 1.5 px.
+ * - `text-clipped`: visible text nodes clipped by `overflow: hidden|clip` (own or ancestor) without
+ *   intentional ellipsis / line-clamp.
+ * - `broken-image`: loaded `<img>` elements with `naturalWidth === 0`.
+ * - `page-overflow-x`: horizontal document overflow (`scrollWidth > clientWidth + 1`).
+ *
+ * Literal colour checks live in `scripts/verify/token-lint.ts` (computed colours vary with opacity
+ * and `color-mix()`). Design spacing/typography/Figma parity belong to visual diff and stories.
  */
 
 export interface ElementRecord {
@@ -31,17 +32,7 @@ export interface ElementRecord {
   font: string
 }
 
-export type Rule =
-  | 'icon-off-center'
-  | 'icon-misaligned'
-  | 'text-clipped'
-  | 'text-overflow'
-  | 'page-overflow-x'
-  | 'overlap'
-  | 'color-not-token'
-  | 'font-not-in-scale'
-  | 'tap-target-small'
-  | 'broken-image'
+export type Rule = 'icon-off-center' | 'text-clipped' | 'broken-image' | 'page-overflow-x'
 
 export interface Violation {
   rule: Rule
@@ -57,17 +48,17 @@ export interface PageAudit {
 }
 
 export interface AuditOptions {
-  /** Rules to skip, e.g. from a scenario's configuration. */
-  disable?: Rule[]
-  /** Run only these rules; the Storybook hook passes its reliable subset here. */
+  /** Run only these rules; the Storybook hook passes its subset here. */
   only?: Rule[]
+  /** Restrict element collection and checks to the visible viewport (e.g. open modals). */
+  viewportOnly?: boolean
 }
 
-/** Rules `auditPage` actually evaluates. Others remain in `Rule` for stored-report compatibility. */
-export const RUNTIME_RULES: readonly Rule[] = ['icon-off-center', 'text-clipped', 'broken-image', 'page-overflow-x']
-
-export function auditPage(rootArg?: Element | null, options?: AuditOptions): PageAudit {
-  const root = rootArg ?? document.body
+export function auditPage(rootOrOptions?: Element | AuditOptions | null, extraOptions?: AuditOptions): PageAudit {
+  const isElement = (value: Element | AuditOptions | null | undefined): value is Element =>
+    value !== null && value !== undefined && 'nodeType' in value
+  const root = isElement(rootOrOptions) ? rootOrOptions : document.body
+  const options = isElement(rootOrOptions) ? extraOptions : (rootOrOptions ?? extraOptions)
   const doc = root.ownerDocument
   const win = doc.defaultView ?? window
   const docElement = doc.documentElement
@@ -77,12 +68,13 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
   const docHeight = docElement.scrollHeight
   /** `scrollWidth` above `clientWidth` is the standard horizontal-overflow test (excludes scrollbars). */
   const viewportWidth = docElement.clientWidth
-  const disabled = new Set(options?.disable ?? [])
+  const viewportHeight = docElement.clientHeight
+  const viewportOnly = options?.viewportOnly === true
   const only = options?.only ? new Set(options.only) : undefined
   const violations: Violation[] = []
 
   function report(rule: Rule, key: string, message: string): void {
-    if (!disabled.has(rule) && (!only || only.has(rule))) violations.push({ rule, key, message })
+    if (!only || only.has(rule)) violations.push({ rule, key, message })
   }
 
   const INTERACTIVE =
@@ -125,13 +117,16 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
     if (cached !== undefined) return cached
     const rect = rectOf(el)
     const style = styleOf(el)
+    const withinBounds = viewportOnly
+      ? rect.right > 0 && rect.left < viewportWidth && rect.bottom > 0 && rect.top < viewportHeight
+      : rect.right + scrollX > 0 &&
+        rect.left + scrollX < docWidth &&
+        rect.bottom + scrollY > 0 &&
+        rect.top + scrollY < docHeight
     const result =
       rect.width > 1 &&
       rect.height > 1 &&
-      rect.right + scrollX > 0 &&
-      rect.left + scrollX < docWidth &&
-      rect.bottom + scrollY > 0 &&
-      rect.top + scrollY < docHeight &&
+      withinBounds &&
       style.display !== 'none' &&
       style.visibility !== 'hidden' &&
       el.checkVisibility({ opacityProperty: true, visibilityProperty: true }) &&
@@ -186,9 +181,8 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
     bottom: number
   }
   /**
-   * Bounding box of the element's own (trimmed) text nodes. Text in child elements is excluded,
-   * and the clipping rule below only runs for text-only leaves, so a child overflowing a box is
-   * never attributed to the parent's text.
+   * Bounding box of the element's own (trimmed) text nodes. Text in child elements is excluded so
+   * child icons or badges are never measured as the parent's own text.
    */
   function directTextBox(el: Element): TextBox | null {
     let box: TextBox | null = null
@@ -213,6 +207,47 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
         : { left: text.left, top: text.top, right: text.right, bottom: text.bottom }
     }
     return box
+  }
+
+  function hasLineClamp(style: CSSStyleDeclaration): boolean {
+    return ['-webkit-line-clamp', 'line-clamp'].some((name) => {
+      const value = style.getPropertyValue(name)
+      return value !== '' && value !== 'none'
+    })
+  }
+
+  function findTextClipping(el: Element, textBox: TextBox): { overX: number; overY: number } | null {
+    const elStyle = styleOf(el)
+    let scrollXHandled = false
+    let scrollYHandled = false
+    let maxOverX = 0
+    let maxOverY = 0
+    for (
+      let container: Element | null = el;
+      container && container !== root && container !== doc.body && container !== docElement;
+      container = container.parentElement
+    ) {
+      const cStyle = styleOf(container)
+      if (cStyle.overflowX === 'auto' || cStyle.overflowX === 'scroll') scrollXHandled = true
+      if (cStyle.overflowY === 'auto' || cStyle.overflowY === 'scroll') scrollYHandled = true
+      const clipsX = !scrollXHandled && (cStyle.overflowX === 'hidden' || cStyle.overflowX === 'clip')
+      const clipsY = !scrollYHandled && (cStyle.overflowY === 'hidden' || cStyle.overflowY === 'clip')
+      if ((clipsX || clipsY) && container.clientWidth > 0 && container.clientHeight > 0) {
+        const cRect = rectOf(container)
+        const contentLeft = cRect.left + container.clientLeft
+        const contentTop = cRect.top + container.clientTop
+        const contentRight = contentLeft + container.clientWidth
+        const contentBottom = contentTop + container.clientHeight
+        const overX = Math.max(textBox.right - contentRight, contentLeft - textBox.left)
+        const overY = Math.max(textBox.bottom - contentBottom, contentTop - textBox.top)
+        const ellipsis = elStyle.textOverflow === 'ellipsis' || cStyle.textOverflow === 'ellipsis'
+        const clamp = hasLineClamp(elStyle) || hasLineClamp(cStyle)
+        if (clipsX && !ellipsis && overX > 1) maxOverX = Math.max(maxOverX, overX)
+        if (clipsY && !clamp && overY > 1) maxOverY = Math.max(maxOverY, overY)
+      }
+      if (cStyle.position === 'fixed') break
+    }
+    return maxOverX > 1 || maxOverY > 1 ? { overX: maxOverX, overY: maxOverY } : null
   }
 
   function imageName(img: HTMLImageElement): string {
@@ -316,8 +351,8 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
     const bg = style.backgroundColor
     return {
       key: keyOf(el),
-      x: Math.round(rect.left + scrollX),
-      y: Math.round(rect.top + scrollY),
+      x: Math.round(viewportOnly ? rect.left : rect.left + scrollX),
+      y: Math.round(viewportOnly ? rect.top : rect.top + scrollY),
       w: Math.round(rect.width),
       h: Math.round(rect.height),
       color: style.color,
@@ -330,7 +365,6 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
   for (const el of tracked) {
     const key = keyOf(el)
     const rect = rectOf(el)
-    const style = styleOf(el)
 
     if (el.matches(INTERACTIVE)) {
       const icons: Element[] = []
@@ -351,31 +385,15 @@ export function auditPage(rootArg?: Element | null, options?: AuditOptions): Pag
     }
 
     const text = directText(el)
-    if (text && el.children.length === 0) {
-      const clipsX = style.overflowX === 'hidden' || style.overflowX === 'clip'
-      const clipsY = style.overflowY === 'hidden' || style.overflowY === 'clip'
-      if ((clipsX || clipsY) && el.clientWidth > 0 && el.clientHeight > 0) {
-        const textBox = directTextBox(el)
-        if (textBox) {
-          const contentLeft = rect.left + el.clientLeft
-          const contentTop = rect.top + el.clientTop
-          const contentRight = contentLeft + el.clientWidth
-          const contentBottom = contentTop + el.clientHeight
-          const overX = Math.max(textBox.right - contentRight, contentLeft - textBox.left)
-          const overY = Math.max(textBox.bottom - contentBottom, contentTop - textBox.top)
-          const ellipsis = style.textOverflow === 'ellipsis'
-          const clamp = ['-webkit-line-clamp', 'line-clamp'].some((name) => {
-            const value = style.getPropertyValue(name)
-            return value !== '' && value !== 'none'
-          })
-          const clippedX = clipsX && !ellipsis && overX > 1
-          const clippedY = clipsY && !clamp && overY > 1
-          if (clippedX || clippedY) {
-            const axes: string[] = []
-            if (clippedX) axes.push(`по ширине на ${Math.round(overX)} px`)
-            if (clippedY) axes.push(`по высоте на ${Math.round(overY)} px`)
-            report('text-clipped', key, `текст не помещается в контейнер ${axes.join(' и ')}`)
-          }
+    if (text) {
+      const textBox = directTextBox(el)
+      if (textBox) {
+        const clipped = findTextClipping(el, textBox)
+        if (clipped) {
+          const axes: string[] = []
+          if (clipped.overX > 1) axes.push(`по ширине на ${Math.round(clipped.overX)} px`)
+          if (clipped.overY > 1) axes.push(`по высоте на ${Math.round(clipped.overY)} px`)
+          report('text-clipped', key, `текст не помещается в контейнер ${axes.join(' и ')}`)
         }
       }
     }

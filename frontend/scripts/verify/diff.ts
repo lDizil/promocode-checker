@@ -36,7 +36,8 @@ export const shortHash = (...parts: (string | number)[]) =>
   createHash('sha1').update(parts.join('\u0000')).digest('hex').slice(0, 6)
 
 const rectOf = (record: ElementRecord): Rect => ({ x: record.x, y: record.y, w: record.w, h: record.h })
-const union = (rects: Rect[]): Rect | undefined => {
+
+export const unionRect = (rects: Rect[]): Rect | undefined => {
   if (rects.length === 0) return undefined
   const x = Math.min(...rects.map((r) => r.x))
   const y = Math.min(...rects.map((r) => r.y))
@@ -47,6 +48,7 @@ const union = (rects: Rect[]): Rect | undefined => {
     h: Math.max(...rects.map((r) => r.y + r.h)) - y,
   }
 }
+
 const parentOf = (key: string) => {
   const parts = key.split(' › ')
   return { context: parts.slice(0, -1).join(' › ') || 'страница', own: parts.at(-1) ?? key }
@@ -71,7 +73,7 @@ export function diffLayout(base: PageAudit, head: PageAudit): Finding[] {
     for (const [context, records] of byContext) {
       const owns = records.map((r) => parentOf(r.key).own)
       const listed = owns.slice(0, 6).join(', ') + (owns.length > 6 ? ` и ещё ${owns.length - 6}` : '')
-      const area = union(records.map(rectOf))
+      const area = unionRect(records.map(rectOf))
       findings.push({
         id: shortHash(kind, context, ...owns.toSorted()),
         kind,
@@ -126,8 +128,8 @@ export function diffLayout(base: PageAudit, head: PageAudit): Finding[] {
       kind: 'moved',
       title: `СДВИГ на (${shift}) px: ${pairs.length} элем., например «${keys[0]}»`,
       detail: keys.slice(0, 5).join('; ') + (keys.length > 5 ? ` и ещё ${keys.length - 5}` : ''),
-      base: union(pairs.map((p) => rectOf(p.a))),
-      head: union(pairs.map((p) => rectOf(p.b))),
+      base: unionRect(pairs.map((p) => rectOf(p.a))),
+      head: unionRect(pairs.map((p) => rectOf(p.b))),
     })
   }
   if (base.docHeight !== head.docHeight || base.docWidth !== head.docWidth) {
@@ -141,17 +143,43 @@ export function diffLayout(base: PageAudit, head: PageAudit): Finding[] {
   return findings
 }
 
-const violationKey = (v: Violation) => `${v.rule}|${v.key}`
+/** Annotates differing pixel regions with the smallest overlapping elements from the head audit. */
+export function pixelFindings(scenarioName: string, head: PageAudit, regions: Rect[]): Finding[] {
+  return regions.map((region, index) => {
+    const near = head.elements
+      .filter(
+        (el) =>
+          el.x < region.x + region.w && el.x + el.w > region.x && el.y < region.y + region.h && el.y + el.h > region.y,
+      )
+      .toSorted((a, b) => a.w * a.h - b.w * b.h)
+      .slice(0, 3)
+      .map((el) => el.key)
+    return {
+      id: shortHash('pixels', scenarioName, index, region.x, region.y, region.w, region.h),
+      kind: 'pixels',
+      title: `ПИКСЕЛИ ${scenarioName}: область ${region.w}×${region.h} @ ${region.x},${region.y}`,
+      detail: `Рядом: ${near.join('; ') || 'фон/неидентифицированный элемент'}`,
+      base: region,
+      head: region,
+    }
+  })
+}
 
-/** Layout invariants: only violations the change introduced block; pre-existing ones are listed separately. */
+const violationKey = (v: Violation) => `${v.rule}|${v.key}`
+const violationSignature = (v: Violation) => `${v.rule}|${v.key}|${v.message}`
+
+/**
+ * Layout invariants: new violations and changed/worsened violations block; unchanged pre-existing
+ * ones are listed separately. A violation counts as fixed only when `(rule, key)` disappears completely.
+ */
 export function diffViolations(base: PageAudit, head: PageAudit) {
-  const before = new Set(base.violations.map(violationKey))
-  const after = new Set(head.violations.map(violationKey))
+  const beforeSignatures = new Set(base.violations.map(violationSignature))
+  const afterKeys = new Set(head.violations.map(violationKey))
   const rects = new Map(head.elements.map((el) => [el.key, rectOf(el)]))
   const introduced: Finding[] = head.violations
-    .filter((v) => !before.has(violationKey(v)))
+    .filter((v) => !beforeSignatures.has(violationSignature(v)))
     .map((v) => ({
-      id: shortHash('violation', v.rule, v.key),
+      id: shortHash('violation', v.rule, v.key, v.message),
       kind: 'violation',
       title: `НАРУШЕНИЕ ${v.rule}: «${v.key}» — ${v.message}`,
       detail: v.message,
@@ -159,8 +187,8 @@ export function diffViolations(base: PageAudit, head: PageAudit) {
     }))
   return {
     introduced,
-    preexisting: head.violations.filter((v) => before.has(violationKey(v))),
-    fixed: base.violations.filter((v) => !after.has(violationKey(v))),
+    preexisting: head.violations.filter((v) => beforeSignatures.has(violationSignature(v))),
+    fixed: base.violations.filter((v) => !afterKeys.has(violationKey(v))),
   }
 }
 

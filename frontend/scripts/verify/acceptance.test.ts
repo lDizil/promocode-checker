@@ -1,23 +1,52 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { test } from 'node:test'
 
 const runner = resolve(import.meta.dirname, 'run.ts')
+const nullDevice = process.platform === 'win32' ? 'NUL' : '/dev/null'
+
+function isolatedGitEnv(root: string): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env }
+  for (const key of [
+    'GIT_DIR',
+    'GIT_WORK_TREE',
+    'GIT_INDEX_FILE',
+    'GIT_OBJECT_DIRECTORY',
+    'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+    'GIT_NAMESPACE',
+    'GIT_COMMON_DIR',
+    'GIT_CEILING_DIRECTORIES',
+    'GIT_CONFIG_COUNT',
+    'GIT_CONFIG_PARAMETERS',
+    'GIT_DISCOVERY_ACROSS_FILESYSTEM',
+  ]) {
+    delete env[key]
+  }
+  env['HOME'] = root
+  env['GIT_CONFIG_GLOBAL'] = nullDevice
+  env['GIT_CONFIG_SYSTEM'] = nullDevice
+  env['GIT_CONFIG_NOSYSTEM'] = '1'
+  env['GIT_ATTR_NOSYSTEM'] = '1'
+  return env
+}
 
 test('partial or stale reports cannot authorise a commit, and blanket acceptance is rejected', () => {
   const root = mkdtempSync(join(tmpdir(), 'ui-accept-test-'))
   try {
+    const env = isolatedGitEnv(root)
     const git = (...args: string[]) =>
-      execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+      execFileSync('git', args, { cwd: root, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
     git('init', '-q')
     git(
       '-c',
       'user.name=Verifier',
       '-c',
       'user.email=verifier@example.invalid',
+      '-c',
+      'commit.gpgsign=false',
       'commit',
       '--allow-empty',
       '-m',
@@ -28,7 +57,7 @@ test('partial or stale reports cannot authorise a commit, and blanket acceptance
     const stamp = join(root, 'frontend', '.verify', 'stamp.json')
     const base = { ref: 'HEAD', sha: git('rev-parse', 'HEAD') }
     const run = (...args: string[]) =>
-      spawnSync(process.execPath, [runner, 'accept', ...args], { cwd: root, encoding: 'utf8' })
+      spawnSync(process.execPath, [runner, 'accept', ...args], { cwd: root, env, encoding: 'utf8' })
     writeFileSync(reportFile, JSON.stringify({ complete: false, base }))
     const partial = run()
     assert.notEqual(partial.status, 0)
@@ -50,7 +79,7 @@ test('partial or stale reports cannot authorise a commit, and blanket acceptance
         '-e',
         `import {uiFingerprint} from ${JSON.stringify(gitModule)};console.log(uiFingerprint('worktree'))`,
       ],
-      { cwd: root, encoding: 'utf8' },
+      { cwd: root, env, encoding: 'utf8' },
     ).trim()
     writeFileSync(
       reportFile,

@@ -1,19 +1,29 @@
 import { spawn, execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
+import { fileURLToPath } from 'node:url'
 import { chromium, type Browser } from 'playwright'
 import { PNG } from 'pngjs'
 
-import { auditPage, type Violation } from './audit.ts'
-import { diffLayout, diffViolations, mergeFindings, shortHash, type Change, type Finding } from './diff.ts'
+import { auditPage, type PageAudit, type Violation } from './audit.ts'
+import {
+  diffLayout,
+  diffViolations,
+  mergeFindings,
+  pixelFindings,
+  shortHash,
+  type Change,
+  type Finding,
+} from './diff.ts'
 import { git, repoRoot, uiFingerprint, verifyDir, stampPath, writeStamp, type Stamp } from './git.ts'
 import { beforeAfter, diffPixels } from './pixels.ts'
 import { scenarios, themes, viewports, type Scenario, type ViewportName } from './scenarios.ts'
 
 const normalise = (text: string) => text.replace(/127\.0\.0\.1:\d+/g, 'localhost:PORT')
+const EMPTY_AUDIT: PageAudit = { elements: [], violations: [], docWidth: 0, docHeight: 0 }
 
 interface Report {
   fingerprint: string
@@ -26,11 +36,15 @@ interface Report {
   fixed: { scenario: string; violations: Violation[] }[]
 }
 
-const args = process.argv.slice(2)
-const dir = verifyDir()
-const reportPath = join(dir, 'report.json')
+/** Reads scenario names defined in `base` worktree; `undefined` when `scenarios.ts` did not exist yet. */
+export function readBaseScenarioNames(worktreeDir: string): Set<string> | undefined {
+  const file = join(worktreeDir, 'frontend', 'scripts', 'verify', 'scenarios.ts')
+  if (!existsSync(file)) return undefined
+  const source = readFileSync(file, 'utf8')
+  return new Set([...source.matchAll(/\bname\s*:\s*['"]([^'"]+)['"]/g)].map((match) => match[1]!))
+}
 
-if (args[0] === 'accept') {
+function runAccept(args: string[], reportPath: string): void {
   if (!existsSync(reportPath)) throw new Error('Сначала pnpm verify:ui')
   const report = JSON.parse(readFileSync(reportPath, 'utf8')) as Report
   if (!report.complete) throw new Error('Частичный --only прогон не допускает коммит. Запустите полную проверку.')
@@ -40,7 +54,7 @@ if (args[0] === 'accept') {
   ) {
     throw new Error('Код или база изменились после проверки. Запустите pnpm verify:ui заново.')
   }
-  for (const arg of args.slice(1)) {
+  for (const arg of args) {
     const split = arg.indexOf('=')
     const id = arg.slice(0, split)
     const reason = arg.slice(split + 1).trim()
@@ -54,8 +68,10 @@ if (args[0] === 'accept') {
     report.accepted.push({ id, title: change.title, reason })
   }
   writeFileSync(reportPath, JSON.stringify(report, null, 2))
-  finish(report)
-} else {
+  finalizeReport(report, verifyDir())
+}
+
+async function runVerify(args: string[], dir: string, reportPath: string): Promise<void> {
   const unknown = args.filter(
     (arg, i) => !['--base', '--only'].includes(arg) && !['--base', '--only'].includes(args[i - 1] ?? ''),
   )
@@ -64,10 +80,12 @@ if (args[0] === 'accept') {
   if (!baseRef || baseRef.startsWith('-')) throw new Error('Укажите commit/ref после --base')
   const only = args.includes('--only') ? args[args.indexOf('--only') + 1]?.split(',') : undefined
   if (args.includes('--only') && !only) throw new Error('Укажите сценарии после --only')
-  if (only?.some((name) => !scenarios.some((scenario) => scenario.name === name)))
+  if (only?.some((name) => !scenarios.some((scenario) => scenario.name === name))) {
     throw new Error('Неизвестный сценарий --only')
+  }
   const selected = scenarios.filter((s) => !only || only.includes(s.name))
   if (!selected.length) throw new Error('Нет сценариев')
+
   const fingerprint = uiFingerprint('worktree')
   const sha = git(['rev-parse', '--verify', `${baseRef}^{commit}`])
   mkdirSync(dir, { recursive: true })
@@ -76,12 +94,47 @@ if (args[0] === 'accept') {
   const images = join(dir, 'images')
   rmSync(images, { recursive: true, force: true })
   mkdirSync(images)
+
   const temp = mkdtempSync(join(tmpdir(), 'promocode-verify-'))
   const worktree = join(temp, 'base')
   let browser: Browser | undefined
   const stopServers: (() => void)[] = []
+  let cleaned = false
+
+  const cleanup = async () => {
+    if (cleaned) return
+    cleaned = true
+    try {
+      await browser?.close()
+    } catch {
+      /* ignore browser shutdown errors */
+    }
+    for (const stop of stopServers) {
+      try {
+        stop()
+      } catch {
+        /* ignore server shutdown errors */
+      }
+    }
+    if (existsSync(worktree)) {
+      try {
+        git(['worktree', 'remove', '--force', worktree])
+      } catch {
+        /* fallback to rmSync */
+      }
+    }
+    rmSync(temp, { recursive: true, force: true })
+  }
+
+  const onSignal = (signal: NodeJS.Signals) => {
+    void cleanup().finally(() => process.exit(signal === 'SIGINT' ? 130 : 143))
+  }
+  process.once('SIGINT', onSignal)
+  process.once('SIGTERM', onSignal)
+
   try {
     git(['worktree', 'add', '--detach', worktree, sha])
+    const baseScenarioNames = readBaseScenarioNames(worktree)
     console.log(`База ${baseRef} (${sha.slice(0, 8)}). Установка зависимостей базы…`)
     execFileSync('pnpm', ['install', '--frozen-lockfile', '--ignore-scripts', '--prefer-offline'], {
       cwd: join(worktree, 'frontend'),
@@ -92,19 +145,45 @@ if (args[0] === 'accept') {
     stopServers.push(baseServer.stop)
     const headServer = await startServer(join(repoRoot(), 'frontend'), join(dir, 'head-server.log'))
     stopServers.push(headServer.stop)
-    browser = await chromium.launch({ headless: true })
+    browser = await chromium.launch({ headless: true, args: ['--disable-gpu'] })
+
     const perScenario: { scenario: string; findings: Finding[] }[] = []
     const preexisting: Report['preexisting'] = []
     const fixed: Report['fixed'] = []
+
     for (const scenario of selected) {
+      const isNewScenario = baseScenarioNames !== undefined && !baseScenarioNames.has(scenario.name)
       for (const viewport of scenario.viewports ?? (Object.keys(viewports) as ViewportName[])) {
         for (const theme of themes) {
           const name = `${scenario.name}-${viewport}-${theme}`
           console.log(`Проверка ${name}`)
-          const base = await capture(browser, baseServer.url, scenario, viewport, theme)
+          const base = await captureBase(browser, baseServer.url, scenario, viewport, theme, isNewScenario)
           const head = await capture(browser, headServer.url, scenario, viewport, theme)
-          writeFileSync(join(images, `${name}-base.png`), base.png)
           writeFileSync(join(images, `${name}-head.png`), head.png)
+
+          if (!base) {
+            const violations = diffViolations(EMPTY_AUDIT, head.audit)
+            const findings: Finding[] = [
+              {
+                id: shortHash('new-scenario', name),
+                kind: 'added',
+                title: `НОВЫЙ СЦЕНАРИЙ ${name}: отсутствует в базе`,
+                detail: `Проверьте снимок images/${name}-head.png вручную и примите новый сценарий`,
+              },
+              ...violations.introduced,
+              ...[...new Set(head.errors)].map((error): Finding => ({
+                id: shortHash('console', error),
+                kind: 'console',
+                title: `ОШИБКА: ${error}`,
+                detail: error,
+              })),
+            ]
+            perScenario.push({ scenario: name, findings })
+            writeFileSync(join(dir, `${name}.json`), JSON.stringify({ base: null, head: head.audit }, null, 2))
+            continue
+          }
+
+          writeFileSync(join(images, `${name}-base.png`), base.png)
           const findings = diffLayout(base.audit, head.audit)
           const violations = diffViolations(base.audit, head.audit)
           findings.push(...violations.introduced)
@@ -122,27 +201,7 @@ if (args[0] === 'accept') {
           writeFileSync(join(images, `${name}-diff.png`), PNG.sync.write(pixels.diff))
           // Always report pixel changes; layout changes do not excuse a missing glyph nearby.
           if (pixels.changed > 0) {
-            for (const [index, region] of pixels.regions.entries()) {
-              const near = head.audit.elements
-                .filter(
-                  (el) =>
-                    el.x < region.x + region.w &&
-                    el.x + el.w > region.x &&
-                    el.y < region.y + region.h &&
-                    el.y + el.h > region.y,
-                )
-                .toSorted((a, b) => a.w * a.h - b.w * b.h)
-                .slice(0, 3)
-                .map((el) => el.key)
-              findings.push({
-                id: shortHash('pixels', name, index, region.x, region.y, region.w, region.h),
-                kind: 'pixels',
-                title: `ПИКСЕЛИ ${name}: область ${region.w}×${region.h} @ ${region.x},${region.y}`,
-                detail: `Рядом: ${near.join('; ') || 'фон/неидентифицированный элемент'}`,
-                base: region,
-                head: region,
-              })
-            }
+            findings.push(...pixelFindings(name, head.audit, pixels.regions))
           }
           for (const finding of findings) {
             if (finding.base || finding.head) {
@@ -157,8 +216,10 @@ if (args[0] === 'accept') {
         }
       }
     }
-    if (fingerprint !== uiFingerprint('worktree'))
+
+    if (fingerprint !== uiFingerprint('worktree')) {
       throw new Error('Код изменился во время проверки. Результат устарел.')
+    }
     const report: Report = {
       fingerprint,
       base: { ref: baseRef, sha },
@@ -170,16 +231,16 @@ if (args[0] === 'accept') {
       fixed,
     }
     writeFileSync(reportPath, JSON.stringify(report, null, 2))
-    finish(report)
+    finalizeReport(report, dir)
   } finally {
-    await browser?.close()
-    for (const stop of stopServers) stop()
-    if (existsSync(worktree)) git(['worktree', 'remove', '--force', worktree])
-    rmSync(temp, { recursive: true, force: true })
+    process.off('SIGINT', onSignal)
+    process.off('SIGTERM', onSignal)
+    await cleanup()
   }
 }
 
-function finish(report: Report) {
+/** Writes `.verify/report.md`, prints pending findings, sets exitCode=1 on pending diffs, or writes `.verify/stamp.json`. */
+function finalizeReport(report: Report, dir: string): void {
   const pending = report.changes.filter((c) => !report.accepted.some((a) => a.id === c.id))
   const lines = [
     '# UI verification',
@@ -201,8 +262,10 @@ function finish(report: Report) {
       ...change.details.map((d) => `- ${d}`),
       '',
     )
-    const crop = change.crops.find((c) => c.base || c.head)
-    if (crop) lines.push(`![Было / стало](images/${change.id}-${crop.scenario}.png)`, '')
+    const crops = change.crops.filter((c) => c.base || c.head)
+    for (const crop of crops) {
+      lines.push(`![Было / стало (${crop.scenario})](images/${change.id}-${crop.scenario}.png)`, '')
+    }
   }
   lines.push('## Существовавшие нарушения (не введены изменением)', '')
   for (const { scenario, violations } of report.preexisting) {
@@ -232,12 +295,32 @@ function finish(report: Report) {
   }
 }
 
+async function captureBase(
+  browser: Browser,
+  url: string,
+  scenario: Scenario,
+  viewport: ViewportName,
+  theme: 'light' | 'dark',
+  isNewScenario: boolean,
+) {
+  if (!isNewScenario || !scenario.steps) {
+    return capture(browser, url, scenario, viewport, theme)
+  }
+  // A brand-new interactive scenario added in HEAD may target a control that does not exist in base.
+  try {
+    return await capture(browser, url, scenario, viewport, theme, 5_000)
+  } catch {
+    return undefined
+  }
+}
+
 async function capture(
   browser: Browser,
   url: string,
   scenario: Scenario,
   viewport: ViewportName,
   theme: 'light' | 'dark',
+  stepTimeoutMs?: number,
 ) {
   const context = await browser.newContext({
     viewport: viewports[viewport],
@@ -263,20 +346,22 @@ async function capture(
       content:
         '*,*::before,*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }',
     })
-    await scenario.steps?.(page)
+    if (scenario.steps) {
+      if (stepTimeoutMs !== undefined) page.setDefaultTimeout(stepTimeoutMs)
+      await scenario.steps(page)
+    }
     await page.evaluate(async () => {
       await document.fonts.ready
     })
     await page.evaluate(async () => {
-      const { promise, resolve } = Promise.withResolvers<void>()
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      const { promise, resolve: done } = Promise.withResolvers<void>()
+      requestAnimationFrame(() => requestAnimationFrame(() => done()))
       await promise
     })
-    const audit = await page.evaluate(auditPage, null)
     // A modal locks the background: content below the viewport is not part of that user state.
-    // Full-page capture there asks Chromium to rasterize offscreen text behind a fixed overlay,
-    // which can produce compositor-only differences. Ordinary page scenarios cover the full page.
+    // Restrict both the audit and screenshot to the viewport so findings match the captured image.
     const modalOpen = (await page.locator('[aria-modal="true"]:visible, dialog:modal').count()) > 0
+    const audit = await page.evaluate(auditPage, { viewportOnly: modalOpen })
     const png = await page.screenshot({ fullPage: !modalOpen, animations: 'disabled' })
     return { audit, png, errors }
   } finally {
@@ -285,13 +370,13 @@ async function capture(
 }
 
 async function startServer(cwd: string, logPath: string) {
-  const { promise, resolve, reject } = Promise.withResolvers<number>()
+  const { promise, resolve: resolvePort, reject } = Promise.withResolvers<number>()
   const server = createServer()
   server.on('error', reject)
   server.listen(0, '127.0.0.1', () => {
     const address = server.address()
     if (!address || typeof address === 'string') return reject(new Error('Нет порта'))
-    server.close(() => resolve(address.port))
+    server.close(() => resolvePort(address.port))
   })
   const port = await promise
   const child = spawn('pnpm', ['dev', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], {
@@ -339,5 +424,26 @@ async function startServer(cwd: string, logPath: string) {
   } catch (error) {
     stop()
     throw error
+  }
+}
+
+function invokedDirectly(): boolean {
+  const entry = process.argv[1]
+  if (!entry) return false
+  try {
+    return realpathSync(resolve(entry)) === realpathSync(fileURLToPath(import.meta.url))
+  } catch {
+    return false
+  }
+}
+
+if (invokedDirectly()) {
+  const args = process.argv.slice(2)
+  const dir = verifyDir()
+  const reportPath = join(dir, 'report.json')
+  if (args[0] === 'accept') {
+    runAccept(args.slice(1), reportPath)
+  } else {
+    await runVerify(args, dir, reportPath)
   }
 }

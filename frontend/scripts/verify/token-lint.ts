@@ -7,9 +7,8 @@
  *
  * Deliberately small and literal: it is a source lint, not a CSS/JS parser. Comments, CSS string
  * contents, `url(...)` contents and `var(...)` references are masked so token references such as
- * `var(--white)` are not mistaken for the named colour. JSX style and paint-attribute string values
- * are scanned. `.stories.tsx` and `.test.tsx` are out of scope (stories may show fixture data);
- * production `.tsx`/`.jsx` is checked.
+ * `var(--white)` are not mistaken for the named colour. Production `.tsx`/`.jsx` and `.stories.tsx`
+ * are checked; only `.test.tsx`/`.test.jsx` and the generated `tokens.css` are excluded.
  *
  * Run: `node scripts/verify/token-lint.ts` (also wired as `pnpm lint:tokens`).
  */
@@ -76,8 +75,13 @@ const NAMED_COLORS = new Set(
 
 const NAMED_COLOR_WORD = /(?<![\w.$-])([a-z]+)(?![\w$-])/gi
 
+function normaliseProperty(property: string): string {
+  const kebab = property.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`).toLowerCase()
+  return kebab.startsWith('webkit-') ? `-${kebab}` : kebab
+}
+
 function isColorProperty(property: string): boolean {
-  const name = property.toLowerCase()
+  const name = normaliseProperty(property)
   if (
     name === 'color' ||
     name === 'fill' ||
@@ -110,114 +114,92 @@ function isColorProperty(property: string): boolean {
   return false
 }
 
+function skipBlockComment(source: string, index: number): number {
+  let cursor = index + 2
+  while (cursor < source.length && !(source[cursor] === '*' && source[cursor + 1] === '/')) cursor++
+  return Math.min(source.length, cursor + 2)
+}
+
+function skipLineComment(source: string, index: number): number {
+  let cursor = index + 2
+  while (cursor < source.length && source[cursor] !== '\n') cursor++
+  return cursor
+}
+
+function skipQuoted(source: string, index: number, quote: string): number {
+  let cursor = index + 1
+  while (cursor < source.length) {
+    if (source[cursor] === '\\') {
+      cursor += 2
+      continue
+    }
+    if (source[cursor] === quote) return cursor + 1
+    cursor++
+  }
+  return cursor
+}
+
+function skipCssUrl(source: string, index: number): number {
+  let cursor = index + 4
+  let depth = 1
+  while (cursor < source.length && depth > 0) {
+    if (source[cursor] === '\\') {
+      cursor += 2
+      continue
+    }
+    if (source[cursor] === '(') depth++
+    else if (source[cursor] === ')') depth--
+    cursor++
+  }
+  return cursor
+}
+
+/** Advances past a comment or string literal starting at `index`, or returns `index` if none starts there. */
+function skipCommentOrString(
+  source: string,
+  index: number,
+  options: { lineComments: boolean; strings: boolean },
+): number {
+  const char = source[index]
+  if (char === '/' && source[index + 1] === '*') return skipBlockComment(source, index)
+  if (options.lineComments && char === '/' && source[index + 1] === '/') return skipLineComment(source, index)
+  if (options.strings && (char === '"' || char === "'" || (options.lineComments && char === '`'))) {
+    return skipQuoted(source, index, char)
+  }
+  return index
+}
+
 function maskRange(chars: string[], from: number, to: number): void {
   for (let index = from; index < to; index++) {
     if (chars[index] !== '\n' && chars[index] !== '\r') chars[index] = ' '
   }
 }
 
-/** Replaces CSS/JS comments with spaces, preserving offsets and newlines. */
-function maskComments(source: string, css: boolean): string {
+/** Replaces comments (and optionally strings / CSS `url(...)`) with spaces, preserving offsets and newlines. */
+function maskSource(source: string, options: { css: boolean; strings: boolean }): string {
   const chars = source.split('')
   let index = 0
   while (index < chars.length) {
-    if (chars[index] === '/' && chars[index + 1] === '*') {
-      const start = index
-      index += 2
-      while (index < chars.length && !(chars[index] === '*' && chars[index + 1] === '/')) index++
-      index = Math.min(chars.length, index + 2)
-      maskRange(chars, start, index)
-      continue
-    }
-    if (!css && chars[index] === '/' && chars[index + 1] === '/') {
-      const start = index
-      index += 2
-      while (index < chars.length && chars[index] !== '\n') index++
-      maskRange(chars, start, index)
-      continue
-    }
     if (
-      css &&
+      options.css &&
       (chars[index] === 'u' || chars[index] === 'U') &&
       source.slice(index, index + 4).toLowerCase() === 'url('
     ) {
       const previous = source[index - 1] ?? ''
       if (previous === '' || !/[\w-]/.test(previous)) {
-        const start = index
-        index += 4
-        let depth = 1
-        while (index < chars.length && depth > 0) {
-          if (chars[index] === '\\') {
-            index += 2
-            continue
-          }
-          if (chars[index] === '(') depth++
-          else if (chars[index] === ')') depth--
-          index++
-        }
-        maskRange(chars, start, index)
+        const end = skipCssUrl(source, index)
+        maskRange(chars, index, end)
+        index = end
         continue
       }
     }
-    if (css && (chars[index] === '"' || chars[index] === "'")) {
-      const quote = chars[index]
-      const start = index
-      index++
-      while (index < chars.length) {
-        if (chars[index] === '\\') {
-          index += 2
-          continue
-        }
-        if (chars[index] === quote) {
-          index++
-          break
-        }
-        index++
-      }
-      maskRange(chars, start, index)
-      continue
-    }
-    index++
-  }
-  return chars.join('')
-}
-
-/** Masks string/template contents for locating `style={{...}}` in code rather than in text. */
-function maskCodeStrings(source: string): string {
-  const chars = source.split('')
-  let index = 0
-  while (index < chars.length) {
-    if (chars[index] === '/' && chars[index + 1] === '/') {
-      const start = index
-      index += 2
-      while (index < chars.length && chars[index] !== '\n') index++
-      maskRange(chars, start, index)
-      continue
-    }
-    if (chars[index] === '/' && chars[index + 1] === '*') {
-      const start = index
-      index += 2
-      while (index < chars.length && !(chars[index] === '*' && chars[index + 1] === '/')) index++
-      index = Math.min(chars.length, index + 2)
-      maskRange(chars, start, index)
-      continue
-    }
-    if (chars[index] === '"' || chars[index] === "'" || chars[index] === '`') {
-      const quote = chars[index]
-      const start = index
-      index++
-      while (index < chars.length) {
-        if (chars[index] === '\\') {
-          index += 2
-          continue
-        }
-        if (chars[index] === quote) {
-          index++
-          break
-        }
-        index++
-      }
-      maskRange(chars, start, index)
+    const end = skipCommentOrString(source, index, {
+      lineComments: !options.css,
+      strings: options.strings,
+    })
+    if (end > index) {
+      maskRange(chars, index, end)
+      index = end
       continue
     }
     index++
@@ -268,7 +250,7 @@ function lineColumn(source: string, index: number): { line: number; column: numb
 }
 
 function cssDeclarations(source: string): Declaration[] {
-  const masked = maskComments(source, true)
+  const masked = maskSource(source, { css: true, strings: true })
   const declarations: Declaration[] = []
   for (const match of masked.matchAll(/([-\w]+)\s*:\s*([^;{}]*)(?=;|})/g)) {
     const property = match[1]
@@ -285,34 +267,12 @@ function matchingBrace(source: string, open: number): number {
   let depth = 0
   let index = open
   while (index < source.length) {
+    const skipped = skipCommentOrString(source, index, { lineComments: true, strings: true })
+    if (skipped > index) {
+      index = skipped
+      continue
+    }
     const char = source[index]
-    if (char === '/' && source[index + 1] === '/') {
-      index += 2
-      while (index < source.length && source[index] !== '\n') index++
-      continue
-    }
-    if (char === '/' && source[index + 1] === '*') {
-      index += 2
-      while (index < source.length && !(source[index] === '*' && source[index + 1] === '/')) index++
-      index += 2
-      continue
-    }
-    if (char === '"' || char === "'" || char === '`') {
-      const quote = char
-      index++
-      while (index < source.length) {
-        if (source[index] === '\\') {
-          index += 2
-          continue
-        }
-        if (source[index] === quote) {
-          index++
-          break
-        }
-        index++
-      }
-      continue
-    }
     if (char === '{') depth++
     else if (char === '}') {
       depth--
@@ -328,43 +288,23 @@ function styleEntries(block: string): StyleEntry[] {
   const chunks: { text: string; index: number }[] = []
   let start = 0
   let depth = 0
-  let quote: string | null = null
   let index = 0
-  while (index <= block.length) {
+  while (index < block.length) {
+    const skipped = skipCommentOrString(block, index, { lineComments: true, strings: true })
+    if (skipped > index) {
+      index = skipped
+      continue
+    }
     const char = block[index]
-    if (quote) {
-      if (char === '\\') {
-        index += 2
-        continue
-      }
-      if (char === quote) quote = null
-      index++
-      continue
-    }
-    if (char === '"' || char === "'" || char === '`') {
-      quote = char
-      index++
-      continue
-    }
-    if (char === '/' && block[index + 1] === '/') {
-      index += 2
-      while (index < block.length && block[index] !== '\n') index++
-      continue
-    }
-    if (char === '/' && block[index + 1] === '*') {
-      index += 2
-      while (index < block.length && !(block[index] === '*' && block[index + 1] === '/')) index++
-      index += 2
-      continue
-    }
     if (char === '(' || char === '[' || char === '{') depth++
     else if (char === ')' || char === ']' || char === '}') depth--
-    if ((char === ',' && depth === 0) || index === block.length) {
+    if (char === ',' && depth === 0) {
       chunks.push({ text: block.slice(start, index), index: start })
       start = index + 1
     }
     index++
   }
+  chunks.push({ text: block.slice(start), index: start })
 
   const entries: StyleEntry[] = []
   for (const chunk of chunks) {
@@ -400,8 +340,8 @@ function lintCss(file: string, source: string): TokenViolation[] {
 
 function lintTsx(file: string, source: string): TokenViolation[] {
   const violations: TokenViolation[] = []
-  const commentsMasked = maskComments(source, false)
-  const codeMasked = maskCodeStrings(source)
+  const commentsMasked = maskSource(source, { css: false, strings: false })
+  const codeMasked = maskSource(commentsMasked, { css: false, strings: true })
 
   for (const match of codeMasked.matchAll(/style\s*=\s*\{\{/g)) {
     const open = (match.index ?? 0) + match[0].length - 1
@@ -427,16 +367,8 @@ function lintTsx(file: string, source: string): TokenViolation[] {
     const name = match[1]
     const value = match[2] ?? match[3] ?? match[5] ?? ''
     if (!name || value === '') continue
-    const property =
-      name === 'stopColor'
-        ? 'stop-color'
-        : name === 'floodColor'
-          ? 'flood-color'
-          : name === 'lightingColor'
-            ? 'lighting-color'
-            : name
     const valueInMatch = match[0].indexOf(value)
-    for (const literal of findColorLiterals(value, property)) {
+    for (const literal of findColorLiterals(value, name)) {
       const position = lineColumn(source, (match.index ?? 0) + (valueInMatch >= 0 ? valueInMatch : 0) + literal.index)
       violations.push({
         file,
@@ -459,7 +391,7 @@ function isLintable(file: string): boolean {
   if (resolve(file) === GENERATED_TOKENS) return false
   const extension = extname(file)
   if (extension === '.css') return true
-  return (extension === '.tsx' || extension === '.jsx') && !/\.(?:stories|test)\.(?:tsx|jsx)$/.test(file)
+  return (extension === '.tsx' || extension === '.jsx') && !/\.test\.(?:tsx|jsx)$/.test(file)
 }
 
 function walk(directory: string): string[] {
