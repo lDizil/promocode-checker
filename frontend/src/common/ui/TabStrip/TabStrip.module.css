@@ -1,0 +1,41 @@
+.root {
+  border-block-end: 1px solid var(--color-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.root::-webkit-scrollbar {
+  display: none;
+}
+
+.list {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-4);
+  min-inline-size: max-content;
+}
+
+.item {
+  display: flex;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--tap-min);
+  padding-block: var(--space-2);
+  border-block-end: 2px solid transparent;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--easing-out);
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tab[data-active] {
+  border-block-end-color: var(--color-border-strong);
+  color: var(--color-text);
+}

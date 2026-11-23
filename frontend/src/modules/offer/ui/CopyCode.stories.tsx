@@ -1,4 +1,4 @@
-import { expect, waitFor } from 'storybook/test'
+import { expect, fn, waitFor } from 'storybook/test'
 
 import preview from '#.storybook/preview'
 
@@ -38,6 +38,33 @@ export const ClipboardDenied = meta.story({
       await expect(canvas.queryByText('Скопировано')).not.toBeInTheDocument()
       await userEvent.click(canvas.getByRole('button', { name: 'Закрыть уведомление' }))
     } finally {
+      if (originalClipboard) Object.defineProperty(navigator, 'clipboard', originalClipboard)
+      else Reflect.deleteProperty(navigator, 'clipboard')
+    }
+  },
+})
+
+export const CopiesWithoutRedirect = meta.story({
+  render: () => <Demo />,
+  play: async ({ canvas, userEvent }) => {
+    const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+    const originalOpen = window.open
+    const writeSpy = fn(() => Promise.resolve())
+    const openSpy = fn(() => null)
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: writeSpy },
+    })
+    window.open = openSpy
+    try {
+      await userEvent.click(canvas.getByRole('button', { name: /Копировать/ }))
+      await waitFor(() => expect(canvas.getByText('Скопировано')).toBeVisible())
+      await waitFor(() => expect(canvas.getByText('Код скопирован')).toBeVisible())
+      await expect(writeSpy).toHaveBeenCalledWith(offer.code)
+      await expect(openSpy).not.toHaveBeenCalled()
+      await userEvent.click(canvas.getByRole('button', { name: 'Закрыть уведомление' }))
+    } finally {
+      window.open = originalOpen
       if (originalClipboard) Object.defineProperty(navigator, 'clipboard', originalClipboard)
       else Reflect.deleteProperty(navigator, 'clipboard')
     }

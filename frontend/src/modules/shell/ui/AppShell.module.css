@@ -20,23 +20,19 @@
 }
 
 .sidebarLogo {
+  display: flex;
+  flex: none;
+  align-items: center;
+  block-size: 72px;
   margin-inline-start: var(--space-2);
 }
 
 .sidebarNav {
-  margin-block-start: var(--space-12);
+  margin-block-start: var(--space-2);
 }
 
 .sidebarPromo {
   margin-block-start: var(--space-12);
-}
-
-.sidebarTheme {
-  display: flex;
-  justify-content: center;
-  margin-block-start: auto;
-  padding-block-start: var(--space-6);
-  border-block-start: 1px solid var(--color-border);
 }
 
 .frame {
@@ -86,8 +82,17 @@
 }
 
 .topbarSearch {
+  flex: 0 1 480px;
   inline-size: 480px;
   max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.topbarActions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .content {
@@ -177,7 +182,7 @@
     flex-direction: column;
     align-self: start;
     block-size: 100dvh;
-    padding: var(--space-8) var(--space-6) var(--space-6);
+    padding: 0 var(--space-6) var(--space-6);
     border-inline-end: 1px solid var(--color-border);
     overflow-y: auto;
   }
@@ -189,6 +194,7 @@
   .topbar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-4);
     block-size: 72px;
     padding-inline: var(--space-8);

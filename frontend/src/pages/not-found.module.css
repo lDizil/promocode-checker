@@ -1,0 +1,15 @@
+.page {
+  padding: var(--space-4);
+}
+
+.actions {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  inline-size: min(400px, calc(100vw - var(--space-8)));
+}
+
+.search {
+  inline-size: 100%;
+  text-align: start;
+}

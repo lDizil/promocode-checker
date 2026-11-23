@@ -12,15 +12,23 @@
 }
 
 .control {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  align-items: stretch;
+  gap: 0;
   min-block-size: 52px;
-  padding-inline: var(--space-4) var(--space-3);
+  padding: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface-2);
-  transition: border-color var(--duration-fast) var(--easing-out);
+  cursor: text;
+  transition:
+    border-color var(--duration-fast) var(--easing-out),
+    background-color var(--duration-fast) var(--easing-out);
+}
+
+.control:hover:not(:has(:disabled), [data-invalid]) {
+  border-color: color-mix(in srgb, var(--color-border-strong) 45%, transparent);
 }
 
 /* DESIGN_SPEC 3.42 focus: a 2 px `border-strong` outline instead of the global ring. */
@@ -45,18 +53,28 @@
 .control:has(:disabled) {
   background: var(--color-neutral-bg);
   border-color: var(--color-border);
+  cursor: not-allowed;
 }
 
 .input {
   flex: 1;
+  align-self: stretch;
+  inline-size: 0;
   min-inline-size: 0;
-  padding: 0;
+  min-block-size: 50px;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
   border: 0;
+  border-radius: inherit;
   background: transparent;
   color: var(--color-text);
   font-family: var(--font-ui);
   font-size: 15px;
   line-height: 22px;
+  cursor: inherit;
+}
+
+.control:has(.trailing) .input {
+  padding-inline-end: var(--space-2);
 }
 
 .input::placeholder {
@@ -80,14 +98,15 @@
 }
 
 .control[data-multiline] {
-  align-items: flex-start;
+  align-items: stretch;
   min-block-size: 96px;
-  padding-block: var(--space-3);
+  padding: 0;
 }
 
 .control[data-multiline] .input {
-  min-block-size: 72px;
+  min-block-size: 94px;
   max-block-size: 200px;
+  padding: var(--space-3) var(--space-4);
   resize: vertical;
 }
 
@@ -95,7 +114,9 @@
   display: inline-flex;
   flex: none;
   align-items: center;
+  align-self: center;
   gap: var(--space-1);
+  padding-inline-end: var(--space-3);
   color: var(--color-text-muted);
 }
 

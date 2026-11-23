@@ -8,7 +8,7 @@ import { TextField } from '@/common/ui/TextField/index.ts'
 
 import type { FailReason } from '../api/feedback.dto.ts'
 import { failReasonDto } from '../api/feedback.dto.ts'
-import { failReasonOptions, type FailReasonInput } from '../model/reasons.ts'
+import { failReasonOptions, freeFailReasonOptions, type FailReasonInput } from '../model/reasons.ts'
 import styles from './FailReasonSheet.module.css'
 
 const formSchema = z.object({
@@ -20,6 +20,7 @@ export interface FailReasonSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (input: FailReasonInput) => void
+  mode?: 'promo' | 'free'
   /** A vote is on its way: the list and «Отправить» become inert. */
   pending?: boolean
   error?: string | null
@@ -29,7 +30,14 @@ export interface FailReasonSheetProps {
  * DESIGN_SPEC 3.19: sheet with a single-choice reason list, the optional comment under «Другое»,
  * and «Отправить» disabled until a reason is chosen.
  */
-export function FailReasonSheet({ open, onOpenChange, onSubmit, pending = false, error = null }: FailReasonSheetProps) {
+export function FailReasonSheet({
+  open,
+  onOpenChange,
+  onSubmit,
+  mode = 'promo',
+  pending = false,
+  error = null,
+}: FailReasonSheetProps) {
   const form = useForm({
     defaultValues: { reason: null as FailReason | null, comment: '' },
     validators: {
@@ -66,7 +74,7 @@ export function FailReasonSheet({ open, onOpenChange, onSubmit, pending = false,
           {(field) => (
             <RadioGroup
               label="Причина"
-              options={failReasonOptions}
+              options={mode === 'free' ? freeFailReasonOptions : failReasonOptions}
               value={field.state.value}
               onValueChange={(value) => field.handleChange(value as FailReason)}
               disabled={pending}

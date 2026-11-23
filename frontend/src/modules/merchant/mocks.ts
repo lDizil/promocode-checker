@@ -1,1 +1,1 @@
-export { merchantFixtures, merchantHandlers } from './api/merchant.mocks.ts'
+export { merchantFixtures, merchantHandlers, merchantSummaries } from './api/merchant.mocks.ts'

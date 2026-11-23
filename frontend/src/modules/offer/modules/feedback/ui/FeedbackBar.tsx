@@ -7,6 +7,8 @@ export type FeedbackBarState = 'idle' | 'sent-success' | 'sent-fail' | 'disabled
 
 export interface FeedbackBarProps {
   state?: FeedbackBarState
+  mode?: 'promo' | 'free'
+  size?: 'sm' | 'md'
   /** True for 3 s after a «worked» vote: shows «Спасибо!…» before settling (DESIGN_SPEC 3.18). */
   fresh?: boolean
   /** The vote is paused until the connection returns; show the queue line instead of the answers. */
@@ -22,9 +24,11 @@ export interface FeedbackBarProps {
   className?: string
 }
 
-/** DESIGN_SPEC 3.18: «Сработал?» + Да/Нет, then a thank-you line with «Изменить». */
+/** DESIGN_SPEC 3.18: «Сработал?» / «Получилось?» + Да/Нет, then a thank-you line with «Изменить». */
 export function FeedbackBar({
   state = 'idle',
+  mode = 'promo',
+  size = 'sm',
   fresh = false,
   queued = false,
   reasonLabel = null,
@@ -57,12 +61,12 @@ export function FeedbackBar({
         </p>
       ) : state === 'idle' ? (
         <>
-          <span className={`${styles.prompt} text-body-sm`}>Сработал?</span>
+          <span className={`${styles.prompt} text-body-sm`}>{mode === 'free' ? 'Получилось?' : 'Сработал?'}</span>
           <div className={styles.actions}>
-            <Button variant="secondary" size="sm" icon={icons.ThumbsUp} disabled={pending} onClick={onWorked}>
+            <Button variant="secondary" size={size} icon={icons.ThumbsUp} disabled={pending} onClick={onWorked}>
               Да
             </Button>
-            <Button variant="secondary" size="sm" icon={icons.ThumbsDown} disabled={pending} onClick={onFailed}>
+            <Button variant="secondary" size={size} icon={icons.ThumbsDown} disabled={pending} onClick={onFailed}>
               Нет
             </Button>
           </div>
@@ -72,11 +76,13 @@ export function FeedbackBar({
           {state === 'sent-success' && fresh ? (
             <>
               <Icon icon={icons.Check} size={16} className={styles.iconSuccess} />
-              <span aria-live="polite">Спасибо! Учли в шансе сработать</span>
+              <span aria-live="polite">
+                {mode === 'free' ? 'Спасибо! Учли ваш отзыв' : 'Спасибо! Учли в шансе сработать'}
+              </span>
             </>
           ) : state === 'sent-success' ? (
             <>
-              <span aria-live="polite">Вы отметили: сработал</span>
+              <span aria-live="polite">{mode === 'free' ? 'Вы отметили: получилось' : 'Вы отметили: сработал'}</span>
               <span className={styles.separator} aria-hidden="true">
                 ·
               </span>

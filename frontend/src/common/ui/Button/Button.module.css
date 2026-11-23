@@ -7,7 +7,12 @@
   padding-inline: var(--space-4);
   text-decoration: none;
   cursor: pointer;
-  transition: background-color var(--duration-fast) var(--easing-out);
+  transition:
+    background-color var(--duration-fast) var(--easing-out),
+    border-color var(--duration-fast) var(--easing-out),
+    color var(--duration-fast) var(--easing-out),
+    opacity var(--duration-fast) var(--easing-out),
+    transform var(--duration-fast) var(--easing-out);
   /* sm is 36 high; the pseudo-element keeps the tap zone at 44 (DESIGN_SPEC 1.8). */
   &[data-size='sm']::after {
     content: '';
@@ -30,15 +35,28 @@
   &[data-variant='primary'] {
     background: var(--color-primary);
     color: var(--color-on-primary);
+
+    &:hover:not([data-disabled], [data-pending]) {
+      background: color-mix(in srgb, var(--color-primary) 86%, var(--color-on-primary));
+    }
   }
   &[data-variant='on-highlight'] {
     background: var(--color-surface-2);
     color: var(--color-text);
+
+    &:hover:not([data-disabled], [data-pending]) {
+      background: var(--color-bg);
+      border-color: color-mix(in srgb, var(--color-border-strong) 25%, transparent);
+    }
   }
   &[data-variant='secondary'] {
     background: transparent;
     border-color: var(--color-border-strong);
     color: var(--color-text);
+
+    &:hover:not([data-disabled], [data-pending]) {
+      background: var(--color-surface-1);
+    }
   }
   &[data-variant='ghost'] {
     background: transparent;
@@ -46,15 +64,32 @@
     padding-inline: var(--space-2);
     text-decoration: underline;
     text-underline-offset: 3px;
+
+    &:hover:not([data-disabled], [data-pending]) {
+      background: var(--color-surface-1);
+    }
   }
   &[data-variant='danger-ghost'] {
     background: transparent;
     color: var(--color-danger);
     padding-inline: var(--space-2);
+
+    &:hover:not([data-disabled], [data-pending]) {
+      background: var(--color-danger-bg);
+    }
   }
 
   &:active:not([data-disabled], [data-pending]) {
     background-image: linear-gradient(var(--color-pressed-overlay-strong), var(--color-pressed-overlay-strong));
+    transform: scale(0.985);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:active:not([data-disabled], [data-pending]) {
+      transform: none;
+    }
   }
 
   &[data-disabled] {

@@ -1,5 +1,6 @@
-export { offerQueries } from './api/offer.queries.ts'
+export { offerQueries, type OfferListParams } from './api/offer.queries.ts'
 export { useMerchantOffers, type MerchantOffers } from './hooks/useMerchantOffers.ts'
+export { useOffer, useOffers, useRecentOffers } from './hooks/useOffers.ts'
 export { useCopyCode, type CopyCodeResult } from './hooks/useCopyCode.ts'
 export { useOfferFilters } from './hooks/useOfferFilters.ts'
 export { useOfferRecommendation } from './hooks/useOfferRecommendation.ts'
@@ -7,6 +8,7 @@ export { OfferFeedback, type FeedbackResponse } from './modules/feedback/index.t
 export { buildConditions, type Condition, type ConditionKind } from './model/conditions.ts'
 export {
   activeFilterCount,
+  offerDetailPath,
   offerFiltersSearch,
   viewOffers,
   type OfferFilters,
@@ -26,8 +28,15 @@ export {
   scoreLevel,
   type Availability,
   type Offer,
+  type OfferAudience,
+  type OfferEligibility,
+  type OfferFailReasonStat,
+  type OfferHistoryItem,
+  type OfferHowToGetStep,
   type OfferKind,
+  type OfferLifecycle,
   type OfferSort,
+  type OfferType,
   type Requirement,
   type ScoreLevel,
 } from './model/offer.ts'

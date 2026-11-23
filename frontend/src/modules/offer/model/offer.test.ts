@@ -107,6 +107,37 @@ describe('offerFiltersSearch', () => {
   it('drops the legacy single kind param', () => {
     expect(offerFiltersSearch.parse({ kind: 'code' })).not.toHaveProperty('kind')
   })
+
+  it('supports free offer filters without breaking promo defaults', () => {
+    const freeYes = variant('free-yes', {
+      type: 'free_credit',
+      kind: 'free',
+      availability: { status: 'yes', reason: null },
+      conditions: { ...byId('o3').conditions, requirements: ['card'] },
+      audience: ['individual'],
+    })
+    const freeNo = variant('free-no', {
+      type: 'free_credit',
+      kind: 'free',
+      availability: { status: 'no', reason: 'закрыто' },
+      conditions: { ...byId('o3').conditions, requirements: ['foreign_card', 'phone'] },
+      audience: ['business'],
+    })
+    const freeStudent = variant('free-student', {
+      type: 'student',
+      kind: 'free',
+      availability: { status: 'yes', reason: null },
+      conditions: { ...byId('o3').conditions, requirements: ['student_status'] },
+      audience: ['student'],
+    })
+
+    const list = [byId('o1'), freeYes, freeNo, freeStudent]
+    expect(ids({ availableInRu: true }, list)).toEqual(['o1', 'free-yes', 'free-student'])
+    expect(ids({ kinds: ['free'], availableInRu: true }, list)).toEqual(['free-yes', 'free-student'])
+    expect(ids({ kinds: ['free'], noCard: true }, list)).toEqual(['free-student'])
+    expect(ids({ kinds: ['free'], noForeignCard: true }, list)).toEqual(['free-yes', 'free-student'])
+    expect(ids({ kinds: ['free'], audience: ['student'] }, list)).toEqual(['free-student'])
+  })
 })
 
 describe('activeFilterCount', () => {

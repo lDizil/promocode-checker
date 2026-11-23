@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 // Contract per docs/ARD.md §6 (ADR 0003): the frontend owns it until the backend publishes OpenAPI.
 
+const logoUrlDto = z.union([z.url(), z.string().regex(/^\/[a-zA-Z0-9/._-]+$/)]).nullable()
+
 export const offerTypeDto = z.enum([
   'promo_code',
   'sale',
@@ -61,16 +63,43 @@ export const adMarkingDto = z.object({
   erid: z.string(),
 })
 
+export const eligibilityDto = z.object({
+  region: z.string(),
+  account_type: z.string(),
+  account_rule: z.string(),
+  duration: z.string(),
+  requirements_note: z.string().nullable(),
+})
+
+export const howToGetStepDto = z.object({
+  title: z.string(),
+  description: z.string().nullable(),
+})
+
+export const failReasonStatDto = z.object({
+  reason: z.string(),
+  count: z.number().int().nonnegative(),
+})
+
+export const offerHistoryItemDto = z.object({
+  date: z.iso.datetime({ offset: true }),
+  title: z.string(),
+  description: z.string().nullable(),
+  state: z.enum(['done', 'current']),
+})
+
 export const offerDto = z.object({
   id: z.string(),
   type: offerTypeDto,
+  category_slug: z.string().default('food'),
   merchant: z.object({
     slug: z.string(),
     name: z.string(),
-    logo_url: z.url().nullable(),
+    logo_url: logoUrlDto,
   }),
   title: z.string(),
   description_short: z.string().nullable(),
+  mechanic_text: z.string().nullable().default(null),
   code: z.string().nullable(),
   value: offerValueDto,
   conditions: offerConditionsDto,
@@ -80,6 +109,12 @@ export const offerDto = z.object({
   ended_at: z.iso.datetime({ offset: true }).nullable(),
   after_end: z.string().nullable(),
   gotchas: z.array(z.string()),
+  eligibility: eligibilityDto.nullable().default(null),
+  how_to_get: z.array(howToGetStepDto).default([]),
+  fail_reasons: z.array(failReasonStatDto).default([]),
+  history: z.array(offerHistoryItemDto).default([]),
+  changed_note: z.string().nullable().default(null),
+  audience: z.array(z.enum(['individual', 'student', 'business'])).default(['individual']),
   source: sourceDto,
   target_url: z.url(),
   ad_marking: adMarkingDto.nullable(),
@@ -92,5 +127,15 @@ export const offerListDto = z.object({
   total: z.number().int().nonnegative(),
 })
 
+export const recentOffersDto = z.object({
+  stats: z.object({
+    verified_today: z.number().int().nonnegative(),
+    merchants_count: z.number().int().nonnegative(),
+  }),
+  just_now: z.array(offerDto),
+  earlier_today: z.array(offerDto),
+})
+
 export type OfferDto = z.infer<typeof offerDto>
 export type OfferListDto = z.infer<typeof offerListDto>
+export type RecentOffersDto = z.infer<typeof recentOffersDto>

@@ -13,7 +13,7 @@ interface TileElementProps {
 }
 
 export interface MerchantTileProps {
-  merchant: Merchant
+  merchant: Pick<Merchant, 'slug' | 'name' | 'logoUrl'>
   offersCount: number
   /**
    * Renders the tile as a link, e.g. `<a href="/m/samokat" />` or a router `<Link />`.

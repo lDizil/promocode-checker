@@ -1,31 +1,31 @@
-# PROGRESS — фронтенд (BR-786)
+# PROGRESS — фронтенд (BR-805)
 
-YouTrack: BR-786 «Сделать основу frontend» (In Progress), GitHub issue #2, ветка `BR-786-frontend-foundation`.
+YouTrack: BR-805 «Реализовать базовые страницы на моковых данных (P0 + P1)» (`In Progress` / `В обработке`), ветка `BR-805-base-pages` (от `main` `111508a`).
 
 ## State
 
-- Архитектура согласована (грилинг 16.11.2026): ADR 0001–0003, `GLOSSARY.md`, правила — `frontend/AGENTS.md`.
-- Скелет: TanStack Start SSR (роуты в `src/app/routes`, entry `src/app/{router.tsx,server.ts,client.tsx}`), Query SSR-интеграция, MSW в браузере и на SSR-сервере, тема в cookie, Google Fonts.
-- Токены: `tokens/*.json` (DTCG) → `pnpm tokens` → `src/app/styles/tokens.css`. Значения выгружены из Figma Variables (`color`, `color-dark`, `size`) и текстовых стилей 16.11.2026. В Figma display/h1/h2 — Inter, не Inter Tight, как в spec 1.4; взято из Figma.
-- Модули `offer` (DTO, model, queries, mocks, фильтры, feedback), `merchant`, `theme`, `shell` (`AppShell`). UI kit — `src/common/ui` (в т.ч. `Illustration` из Figma `Illustration/*`, цвета через токены).
-- Страница P-04 `/m/$slug` собрана: SSR, 404, фильтры, копирование кода + Toast, отзыв «Сработал?», светлая/тёмная тема. Корень — `shellComponent` с `AppShell` и `Toaster`.
-- Проверки зелёные: build, typecheck, lint, format:check, test (9), test:stories (268). P-04 проверена в браузере на 1440 и 390, тёмная тема, копирование.
-- PR #7 открыт (`675ef78`). Замечания review исправлены локально: точный логотип и favicon из Figma, единые токены/склонения и часовой пояс Europe/Moscow, метод проверки и категории условий, мобильное «Подробнее», padding шапки, одна колонка условий P-04, анимация бейджа.
-- Toast после review: нижний timeline 2 px, паузы при hover/focus/page activity, кнопка закрытия, визуальный swipe, entry/exit 150 мс, отступ от safe area. В браузере проверены уменьшение линии, пауза hover/focus, timeout ~4 с, кнопка, Escape, swipe, возврат после короткого жеста и reduced motion. `Toast.stories.tsx`: 7 тестов прошли; узкие lint/format и typecheck прошли. Headless-табы остаются focused при переключении: настоящий background-сценарий не проверен.
-- Полные фильтры (тип, клиент, сумма, надёжность) мгновенно обновляют UI и сохраняются в URL; тема применяет выбор до сохранения cookie. Offline-баннер показывает время кэша, отзывы стоят в очереди до соединения; после отрицательного отзыва совместимый оффер выделяется на 5 с. Копирование подтверждается только после Clipboard Promise; магазин открывается через 800 мс в заранее зарезервированной вкладке без opener.
-- Проверки исправлений: 25 unit-тестов в 3 файлах и 40 browser/stories-тестов в 8 файлах прошли; typecheck, scoped lint/format и production SSR build прошли. В Chromium 1440/390 проверены полный FilterSheet, применение суммы/надёжности, логотип, мобильное «Подробнее», тёмная тема, копирование и целевая новая вкладка, offline-очередь → reconnect → рекомендация, сохранённый timeline/close. Сборка предупреждает о клиентском chunk > 500 kB.
+- Завершена основа BR-786 (в `main`), добавлен verification gate `BR-813` (`.githooks`, `verify:ui`, `lint:tokens`), локальные хуки установлены (`verify.mode=enforce`).
+- Выгружены 8 логотипов брендов из Figma (`02 Components` → `public/brands/*.svg`: Samokat, Яндекс Еда, Ozon, Wildberries, Литрес, Lamoda, Yandex Cloud, GitHub).
+- Расширены `common/ui`: `Icon` (новые иконки), `TextField` (`number`/`date`/`url`), `CategoryTile` (`light`/`yellow`/`purple`), `TopbarChip`, `ThemeToggle` (`variant="pill"`), `AnchorNav` + `use-active-anchor`, `TabStrip`, `Autocomplete` (`boxed`/`bare`/`field` поверх `@ui-sdk/react/autocomplete` с постоянно смонтированным `AutocompleteList` для корректной ARIA `role="presentation"` и без переполнения в Flex/Grid); инпуты (`Autocomplete`, `TextField`, `SearchField`) растянуты на 100% кликабельной области рамки; добавлены token-only `:hover`/`:active` эффекты на кнопки, чипы, плитки, карточки и поля формы с поддержкой `prefers-reduced-motion`.
+- Реализованы и подключены к MSW все базовые страницы P0 + P1 на моках (17 сервисов и единый список офферов):
+  - AppShell: 3 пункта навигации (`Главная`, `Каталог`, `Как мы проверяем`), `PromoBlock` в `Sidebar`/`MenuDrawer`, `TopbarChip` + `ThemeToggle` pill в `Topbar`, мобильный поиск в `Header`, 5-ссылочный `Footer`, логотип и навигация в `Sidebar` выровнены с `Topbar`/Hero.
+  - P-01 `/` (`home.tsx`), P-02/P-03 `SearchAutocomplete` и `/search?q=...`, P-04 `/m/$slug` (сохранён без регрессий + SVG-логотип Самоката), контейнерно-адаптивные сетки магазинов (`.merchantsGrid`) на `/`, `/catalog` и `/search`, чтобы на промежуточных ширинах (`1024–1199px`) карточки не сжимали названия.
+  - P-05 `/m/$slug/o/$offerId` (промокод; копирование в `useCopyCode` больше не открывает автоматически сайт партнёра — рядом явная ссылка «Перейти в магазин»), P-08 `/m/$slug/o/$offerId` (бесплатный оффер с шагами и отзывом «Получилось?»).
+  - P-06 единый каталог `/catalog`, `/catalog/$category`, `/catalog/free`, `/catalog/free/$slug` (единый `OfferCard`, раскрытие недоступных из РФ, `FreeFilterSheet`).
+  - P-09 `/submit` и `/submit?m=<slug>` (поиск магазина, проверка дубля, условные поля, mock `ERROR500`/`LIMIT429`, экран успеха).
+  - P-11 `/about/verification` (и якорь `#advertising`), `/privacy`, `/contacts`, P-12 `404` с поиском (`not-found.tsx`).
+- Проверки перед передачей пользователю пройдены: `oxfmt --check` (370 файлов), `tsc --noEmit` (0), `oxlint` (0 ошибок/предупреждений, 286 файлов), `token-lint.ts` (221 файл), `vitest run --project=unit` (6 файлов, 48 тестов), `vitest run --project=storybook` (57 файлов, 291 тест, включая `CopiesWithoutRedirect`), `vite build` SSR+client, живая проверка в Chromium (инпуты, hover, копирование без редиректа, `1091px` сетка магазинов), `verify:ui` (`PASS: 0 требуют решения`, `.verify/stamp.json` актуален: `8efddf8a2b0ee675`, 876 принятых изменений).
 
 ## Next step
 
-- Закоммитить и запушить локальные исправления review в существующий PR #7; после merge перевести BR-786 в Fixed.
-- После merge: BR-786 → Fixed. Дальше — остальные страницы (P-01 главная и т.д.) отдельными задачами.
+- Открыть PR `BR-805-base-pages` → `main` (`Closes #1`, задача `BR-805`).
+- После merge перевести `BR-805` в `Fixed` (`Verified` ставит человек).
 
 ## Known issues
 
 - `@custom-media` не используется: Lightning CSS компилирует каждый CSS Module отдельно, общий `@custom-media` не виден. Брейкпоинт — литерал `(width >= 1024px)`.
 - Логгер в `src/common/logger.ts`, а не в `app/integrations`: его вызывает `common/http.ts`, а `common` не может импортировать `app`. Транспорт подменяется `setLogTransport` из `app`.
 - Прод: браузер ходит на `/api` своего хоста. Нужен reverse proxy `/api → backend` (или server route-прокси в Start) — решить вместе с BR-787.
-- Расхождения shell со spec 3.1/3.2: в Topbar нет TopbarChip и ThemeToggle (тема — внизу сайдбара), в навигации нет «Прислать код»; маршрутов `/privacy`, `/contacts`, `/catalog`, `/about/verification` пока нет.
 - `Illustration/qr` (160×160) не выгружена: пока не используется ни одной страницей.
 - Отступ Toast от сайдбара — `--layout-sidebar-width` в `global.css`, дублирует 240 px из `AppShell.module.css`.
 - `oxfmt` 0.x и `jsPlugins` oxlint в alpha — версии зафиксированы точно.
@@ -35,3 +35,4 @@ YouTrack: BR-786 «Сделать основу frontend» (In Progress), GitHub 
 - SPA на TanStack Router без SSR: SEO страниц магазинов — P0 (ADR 0001).
 - `modules/ui-kit` по канону FEOD: команда выбрала `common/ui` (ADR 0002).
 - Отдельный слой `shared` с ключами всех запросов: ключи живут в модулях, в `common` только соглашение.
+- Открытие детали оффера P-05/P-08 модальным окном/шторкой: выбран прямой маршрут `/m/$slug/o/$offerId` и `/catalog/free/$slug` (решение по BR-805).

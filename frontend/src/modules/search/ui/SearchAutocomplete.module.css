@@ -1,0 +1,109 @@
+.iconBox {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-1);
+  color: var(--color-text-muted);
+}
+
+.match {
+  font-weight: 700;
+}
+
+.loadingList {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: 56px;
+  padding: var(--space-2);
+}
+
+.loadingText {
+  display: grid;
+  flex: 1;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.emptyState {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.didYouMean {
+  color: var(--color-text-muted);
+}
+
+.emptyLink {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.desktopFooter {
+  display: none;
+
+  @media (width >= 1024px) {
+    display: block;
+  }
+}
+
+@media (width < 1024px) {
+  .dropdown > div:has(> .desktopFooter) {
+    display: none;
+  }
+}
+
+.recentSection {
+  display: grid;
+}
+
+.recentLabel {
+  padding: var(--space-2) var(--space-4) var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.recentList {
+  display: grid;
+}
+
+.recentRow {
+  display: flex;
+  align-items: center;
+  padding-inline-end: var(--space-2);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.recentRow:last-child {
+  border-block-end: 0;
+}
+
+.recentRow:hover {
+  background: var(--color-surface-1);
+}
+
+.recentLink {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  min-block-size: 56px;
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.recentTerm {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

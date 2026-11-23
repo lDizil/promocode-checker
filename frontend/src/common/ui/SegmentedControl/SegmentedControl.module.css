@@ -38,6 +38,11 @@
   line-height: 18px;
   font-weight: 600;
   cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-out);
+
+  &:hover:not([data-checked], [data-disabled]) {
+    color: var(--color-text);
+  }
 
   &[data-checked] {
     color: var(--color-text);

@@ -1,6 +1,8 @@
 import type { OfferDto } from '../api/offer.dto.ts'
 
 export type OfferType = OfferDto['type']
+export type OfferLifecycle = OfferDto['lifecycle']
+export type OfferAudience = OfferDto['audience'][number]
 export type Requirement = OfferDto['conditions']['requirements'][number]
 export type Availability = 'yes' | 'partial' | 'no'
 export type VerificationMethod = NonNullable<OfferDto['verification']['method']>
@@ -36,13 +38,40 @@ export interface Verification {
   fail7d: number
 }
 
+export interface OfferEligibility {
+  region: string
+  accountType: string
+  accountRule: string
+  duration: string
+  requirementsNote: string | null
+}
+
+export interface OfferHowToGetStep {
+  title: string
+  description: string | null
+}
+
+export interface OfferFailReasonStat {
+  reason: string
+  count: number
+}
+
+export interface OfferHistoryItem {
+  date: Date
+  title: string
+  description: string | null
+  state: 'done' | 'current'
+}
+
 export interface Offer {
   id: string
   type: OfferType
   kind: OfferKind
+  categorySlug: string
   merchant: { slug: string; name: string; logoUrl: string | null }
   title: string
   description: string | null
+  mechanicText: string | null
   code: string | null
   value: OfferValue
   conditions: OfferConditions
@@ -52,10 +81,17 @@ export interface Offer {
   endedAt: Date | null
   afterEnd: string | null
   gotchas: string[]
+  eligibility: OfferEligibility | null
+  howToGet: OfferHowToGetStep[]
+  failReasons: OfferFailReasonStat[]
+  history: OfferHistoryItem[]
+  changedNote: string | null
+  audience: OfferAudience[]
   source: { kind: SourceKind; name: string | null; url: string | null }
   targetUrl: string
   adMarking: { advertiser: string; inn: string; erid: string } | null
   verification: Verification
+  lifecycle: OfferLifecycle
   isEnded: boolean
 }
 
@@ -88,9 +124,11 @@ export function toOffer(dto: OfferDto): Offer {
     id: dto.id,
     type: dto.type,
     kind: kindOf(dto.type),
+    categorySlug: dto.category_slug,
     merchant: { slug: dto.merchant.slug, name: dto.merchant.name, logoUrl: dto.merchant.logo_url },
     title: dto.title,
     description: dto.description_short,
+    mechanicText: dto.mechanic_text,
     code: dto.code,
     value: {
       amount: dto.value.amount,
@@ -114,6 +152,25 @@ export function toOffer(dto: OfferDto): Offer {
     endedAt: toDate(dto.ended_at),
     afterEnd: dto.after_end,
     gotchas: dto.gotchas,
+    eligibility: dto.eligibility
+      ? {
+          region: dto.eligibility.region,
+          accountType: dto.eligibility.account_type,
+          accountRule: dto.eligibility.account_rule,
+          duration: dto.eligibility.duration,
+          requirementsNote: dto.eligibility.requirements_note,
+        }
+      : null,
+    howToGet: dto.how_to_get,
+    failReasons: dto.fail_reasons,
+    history: dto.history.map((item) => ({
+      date: new Date(item.date),
+      title: item.title,
+      description: item.description,
+      state: item.state,
+    })),
+    changedNote: dto.changed_note,
+    audience: dto.audience,
     source: dto.source,
     targetUrl: dto.target_url,
     adMarking: dto.ad_marking,
@@ -124,6 +181,7 @@ export function toOffer(dto: OfferDto): Offer {
       success7d: dto.verification.success_7d,
       fail7d: dto.verification.fail_7d,
     },
+    lifecycle: dto.lifecycle,
     isEnded: dto.lifecycle === 'ended' || dto.lifecycle === 'expired',
   }
 }

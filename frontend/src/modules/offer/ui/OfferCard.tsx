@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react'
+import { cloneElement, type ReactElement, type ReactNode } from 'react'
 
 import { Button } from '@/common/ui/Button/index.ts'
 import { Icon, type IconGlyph } from '@/common/ui/Icon/Icon.tsx'
@@ -68,8 +68,10 @@ export interface OfferCardProps {
   onCopy: () => void
   /** FeedbackBar, assembled by the page; hidden for ended offers. */
   feedbackSlot?: ReactNode
-  /** Icon-only «Подробнее» for mobile (e.g. IconButton with a router Link render); full density only. */
+  /** Icon-only «Подробнее» (e.g. IconButton with a router Link render); full density only. */
   detailsLink?: ReactElement
+  /** Optional router Link element for clickable compact cards (stretched across the card via CSS). */
+  linkRender?: ReactElement<{ className?: string; children?: ReactNode }>
 }
 
 /** DESIGN_SPEC 3.20: one card for codes, sales, cashback and free offers. */
@@ -82,6 +84,7 @@ export function OfferCard({
   onCopy,
   feedbackSlot,
   detailsLink,
+  linkRender,
 }: OfferCardProps) {
   const level = scoreLevel(offer)
   const isFree = offer.kind === 'free'
@@ -116,10 +119,28 @@ export function OfferCard({
             checkedAt ? formatAgo(checkedAt, now) : null,
           ]
 
+    const valueNode = linkRender
+      ? cloneElement(
+          linkRender,
+          { className: [styles.compactLink, linkRender.props.className].filter(Boolean).join(' ') },
+          headline,
+        )
+      : headline
+
     return (
       <article className={styles.root} data-density="compact" data-ended={offer.isEnded || undefined}>
-        <span className={`text-title ${styles.compactMerchant}`}>{offer.merchant.name}</span>
-        <p className={`text-title ${styles.compactValue}`}>{headline}</p>
+        <div className={styles.compactHead}>
+          <div className={styles.compactMerchantRow}>
+            <MerchantAvatar name={offer.merchant.name} logoUrl={offer.merchant.logoUrl} size={24} />
+            <span className={`text-title ${styles.compactMerchant}`}>{offer.merchant.name}</span>
+          </div>
+          {offer.adMarking && (
+            <div className={styles.compactAd}>
+              <AdLabel marking={offer.adMarking} />
+            </div>
+          )}
+        </div>
+        <p className={`text-title ${styles.compactValue}`}>{valueNode}</p>
         <div className={styles.compactFoot}>
           <p className={`text-body-sm ${styles.compactMeta}`}>{compactMeta.filter(Boolean).join(' · ')}</p>
           <Tag tone={tag.tone}>{tag.label}</Tag>
@@ -171,7 +192,7 @@ export function OfferCard({
           <div className={styles.mechanicBlock}>
             <p className={styles.mechanic}>
               <Icon icon={MECHANIC[offer.kind].icon} size={16} />
-              <span className="text-body-sm">{MECHANIC[offer.kind].text}</span>
+              <span className="text-body-sm">{offer.mechanicText ?? MECHANIC[offer.kind].text}</span>
             </p>
             <Button
               variant="secondary"

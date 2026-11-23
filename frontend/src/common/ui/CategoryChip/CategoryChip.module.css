@@ -16,7 +16,9 @@
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--duration-fast) var(--easing-out);
+  transition:
+    background-color var(--duration-fast) var(--easing-out),
+    border-color var(--duration-fast) var(--easing-out);
 }
 
 /* 36 + 4 px on each side keeps the tap zone at 44 (DESIGN_SPEC 1.8). */
@@ -28,4 +30,5 @@
 
 .root:hover {
   background: var(--color-neutral-bg);
+  border-color: color-mix(in srgb, var(--color-border-strong) 25%, transparent);
 }

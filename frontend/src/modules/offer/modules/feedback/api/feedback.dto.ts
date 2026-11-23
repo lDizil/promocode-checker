@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const feedbackVerdictDto = z.enum(['worked', 'failed'])
 
-/** The seven answers of DESIGN_SPEC 3.19, in the same order as the radio list. */
+/** Promo answers (DESIGN_SPEC 3.19) plus free-offer answers (DESIGN_SPEC 4.8 item 12). */
 export const failReasonDto = z.enum([
   'expired',
   'min_order',
@@ -10,6 +10,10 @@ export const failReasonDto = z.enum([
   'new_customers',
   'not_stackable',
   'smaller_discount',
+  'offer_ended',
+  'card_rejected',
+  'ineligible',
+  'region_unavailable',
   'other',
 ])
 

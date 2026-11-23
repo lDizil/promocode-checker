@@ -24,6 +24,13 @@
   background: var(--color-surface-2);
   color: var(--color-on-primary);
   cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-out),
+    border-color var(--duration-fast) var(--easing-out);
+}
+
+.root:hover .box:not([data-checked], [data-indeterminate], [data-disabled]) {
+  background: var(--color-surface-1);
 }
 
 .box[data-checked],

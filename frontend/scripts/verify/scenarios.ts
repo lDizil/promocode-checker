@@ -38,4 +38,8 @@ export const scenarios: Scenario[] = [
       await page.getByRole('dialog').waitFor()
     },
   },
+  { name: 'catalog', path: '/catalog' },
+  { name: 'catalog-free', path: '/catalog/free' },
+  { name: 'search', path: '/search?q=%D1%8F%D0%BD%D0%B4%D0%B5%D0%BA%D1%81' },
+  { name: 'offer-free', path: '/m/yandex-cloud/o/f1' },
 ]

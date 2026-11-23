@@ -5,6 +5,8 @@ import { FeedbackBar } from './FeedbackBar.tsx'
 
 export interface OfferFeedbackProps {
   offerId: string
+  mode?: 'promo' | 'free'
+  size?: 'sm' | 'md'
   /** Ended offers hide the bar (DESIGN_SPEC 3.18). */
   disabled?: boolean
   /** Receives the server verdict after a real successful submission, queued or immediate. */
@@ -15,13 +17,21 @@ export interface OfferFeedbackProps {
  * Ready composite for the OfferCard footer (DESIGN_SPEC 3.18 + 3.19 + 5.2):
  * the bar, the reason sheet and the TanStack Query mutation behind them.
  */
-export function OfferFeedback({ offerId, disabled = false, onSubmitted }: OfferFeedbackProps) {
+export function OfferFeedback({
+  offerId,
+  mode = 'promo',
+  size = 'sm',
+  disabled = false,
+  onSubmitted,
+}: OfferFeedbackProps) {
   const feedback = useOfferFeedback(offerId, onSubmitted)
 
   return (
     <>
       <FeedbackBar
         state={disabled ? 'disabled' : feedback.state}
+        mode={mode}
+        size={size}
         fresh={feedback.fresh}
         queued={feedback.queued}
         reasonLabel={feedback.reasonLabel}
@@ -35,6 +45,7 @@ export function OfferFeedback({ offerId, disabled = false, onSubmitted }: OfferF
         open={feedback.sheetOpen}
         onOpenChange={feedback.setSheetOpen}
         onSubmit={feedback.submitFailed}
+        mode={mode}
         pending={feedback.pending}
         error={feedback.error}
       />

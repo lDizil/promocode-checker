@@ -1,0 +1,64 @@
+.sheet {
+  gap: var(--space-4);
+}
+
+.sheet[data-presentation='sheet'] {
+  inset: auto 0 0;
+  inline-size: 100%;
+  block-size: 90dvh;
+  max-block-size: 90dvh;
+  margin: 0;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.section legend {
+  margin-block-end: var(--space-3);
+  padding: 0;
+}
+
+.checks {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.footer {
+  position: sticky;
+  inset-block-end: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  background: var(--color-surface-2);
+  border-block-start: 1px solid var(--color-border);
+}
+
+@media (width >= 1024px) {
+  .sheet[data-presentation='sheet'] {
+    inset: 0 0 0 auto;
+    inline-size: 360px;
+    block-size: 100dvh;
+    max-block-size: 100dvh;
+    margin: 0;
+    border-radius: 0;
+  }
+}
