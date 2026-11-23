@@ -23,6 +23,11 @@
   color: var(--color-text);
   text-align: start;
   cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-out);
+
+  &:hover {
+    color: var(--color-accent-text);
+  }
 }
 
 .question {

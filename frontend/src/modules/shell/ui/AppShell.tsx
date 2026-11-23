@@ -1,5 +1,7 @@
+import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
+import { PromoBlock } from '@/common/ui/PromoBlock/index.ts'
 import type { ThemeValue } from '@/common/ui/ThemeToggle/index.ts'
 import { useThemePreference } from '@/modules/theme/index.ts'
 
@@ -18,8 +20,10 @@ export function AppShell({ children, promo }: AppShellProps) {
     void saveTheme(next)
   }
 
+  const resolvedPromo = promo === undefined ? <PromoBlock actionRender={<Link to="/submit" />} /> : promo
+
   return (
-    <AppShellView theme={theme} onThemeChange={changeTheme} promo={promo}>
+    <AppShellView theme={theme} onThemeChange={changeTheme} promo={resolvedPromo}>
       {children}
     </AppShellView>
   )

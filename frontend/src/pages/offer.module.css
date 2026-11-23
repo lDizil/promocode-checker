@@ -1,0 +1,359 @@
+.page {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-4);
+
+  @media (width >= 1024px) {
+    padding: var(--space-2) var(--space-8) var(--space-8);
+  }
+}
+
+.hero {
+  display: grid;
+  gap: var(--space-5);
+  min-inline-size: 0;
+  padding-block-end: var(--space-6);
+  border-block-end: 1px solid var(--color-border);
+  scroll-margin-block-start: var(--space-6);
+
+  @media (width >= 1024px) {
+    padding-block-end: var(--space-8);
+  }
+}
+
+.navRow {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.crumbLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-block-size: var(--tap-min);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.crumbLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.crumbSep {
+  color: var(--color-text-muted);
+  padding-inline: var(--space-1);
+}
+
+.crumbCurrent {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.statusRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.neutralTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 24px;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-bg);
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.neutralDot {
+  flex: none;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-muted);
+}
+
+.topMeta {
+  display: none;
+  text-align: end;
+  color: var(--color-text-muted);
+
+  @media (width >= 1024px) {
+    display: grid;
+    gap: 2px;
+    flex: none;
+  }
+}
+
+.brandRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.brandIdentity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.merchantLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.merchantLink:hover .merchantName {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.merchantName {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.typeChip {
+  display: inline-flex;
+  align-items: center;
+  block-size: 24px;
+  padding-inline: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.headlineGroup {
+  display: grid;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.headline {
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.headlineEnded {
+  color: var(--color-text-disabled);
+}
+
+.description {
+  max-inline-size: 68ch;
+  color: var(--color-text-muted);
+}
+
+.dangerBanner {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.dangerIcon {
+  margin-block-start: 1px;
+  color: var(--color-danger);
+}
+
+.bannerText {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.actionRow {
+  display: grid;
+  gap: var(--space-3);
+
+  @media (width >= 1024px) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+  }
+}
+
+.mechanicActionRow {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+
+  @media (width >= 1024px) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+}
+
+.mechanicLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.mechanicLine svg {
+  flex: none;
+}
+
+.freeCta {
+  inline-size: 100%;
+
+  @media (width >= 640px) {
+    inline-size: auto;
+    justify-self: start;
+  }
+}
+
+.statWrap {
+  min-inline-size: 0;
+}
+
+.raisedRelated {
+  min-inline-size: 0;
+  max-inline-size: 720px;
+}
+
+.bodyGrid {
+  display: grid;
+  gap: var(--space-8);
+  min-inline-size: 0;
+
+  @media (width >= 1024px) {
+    grid-template-columns: 200px minmax(0, 720px);
+    align-items: start;
+    gap: var(--space-8);
+  }
+}
+
+.anchorCol {
+  display: none;
+
+  @media (width >= 1024px) {
+    display: block;
+    position: sticky;
+    inset-block-start: var(--space-8);
+  }
+}
+
+.contentCol {
+  display: grid;
+  gap: var(--space-10);
+  min-inline-size: 0;
+}
+
+.section {
+  min-inline-size: 0;
+  scroll-margin-block-start: var(--space-6);
+}
+
+.metaNotes {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-4);
+}
+
+.metaNote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.metaNoteIcon {
+  flex: none;
+  margin-block-start: 1px;
+}
+
+.feedbackCard {
+  padding: var(--space-4);
+  background: var(--color-surface-1);
+  border-radius: var(--radius-md);
+  scroll-margin-block-start: var(--space-6);
+
+  @media (width >= 1024px) {
+    padding: var(--space-5);
+  }
+}
+
+.chipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.note {
+  margin-block-start: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.gotchaStack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sourceLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.inlineLink:hover {
+  color: var(--color-accent-text);
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+
+  @media (width >= 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

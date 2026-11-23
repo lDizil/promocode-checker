@@ -1,6 +1,7 @@
+import { Link, useRouterState } from '@tanstack/react-router'
 import { useState, type ReactNode } from 'react'
-import { useRouterState } from '@tanstack/react-router'
 
+import { PromoBlock } from '@/common/ui/PromoBlock/index.ts'
 import type { ThemeValue } from '@/common/ui/ThemeToggle/index.ts'
 
 import styles from './AppShell.module.css'
@@ -20,17 +21,17 @@ export interface AppShellViewProps {
 
 export function AppShellView({ children, promo, theme, onThemeChange }: AppShellViewProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [query, setQuery] = useState('')
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const isHome = pathname === '/'
+  const resolvedPromo = promo === undefined ? <PromoBlock actionRender={<Link to="/submit" />} /> : promo
 
   return (
     <div className={styles.root}>
       <div className={styles.layout}>
-        <Sidebar theme={theme} onThemeChange={onThemeChange} promo={promo} />
+        <Sidebar promo={resolvedPromo} />
         <div className={styles.frame}>
-          <Header query={query} onQueryChange={setQuery} onMenuOpen={() => setMenuOpen(true)} showSearch={!isHome} />
-          <Topbar query={query} onQueryChange={setQuery} />
+          <Header onMenuOpen={() => setMenuOpen(true)} showSearch={!isHome} />
+          <Topbar theme={theme} onThemeChange={onThemeChange} />
           <div className={styles.content}>{children}</div>
           <Footer />
         </div>
@@ -40,7 +41,7 @@ export function AppShellView({ children, promo, theme, onThemeChange }: AppShell
         onOpenChange={setMenuOpen}
         theme={theme}
         onThemeChange={onThemeChange}
-        promo={promo}
+        promo={resolvedPromo}
       />
     </div>
   )

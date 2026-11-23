@@ -75,3 +75,16 @@ export const SegmentedChange = meta.story({
     await expect(canvas.getByRole('radio', { name: 'Тёмная' })).toHaveAttribute('aria-checked', 'true')
   },
 })
+
+const pillChange = fn()
+
+export const Pill = meta.story({
+  args: { variant: 'pill' as const, value: 'light' as const, onChange: pillChange },
+  play: async ({ canvas, userEvent }) => {
+    const control = canvas.getByRole('switch')
+    await expect(control).toHaveAttribute('aria-checked', 'false')
+    await userEvent.click(control)
+    await expect(pillChange).toHaveBeenCalledWith('dark')
+    await expect(control).toHaveAttribute('aria-checked', 'true')
+  },
+})

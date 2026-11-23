@@ -27,8 +27,13 @@
   background: var(--color-surface-2);
   cursor: inherit;
   transition:
+    background-color var(--duration-fast) var(--easing-out),
     border-color var(--duration-fast) var(--easing-out),
     border-width var(--duration-fast) var(--easing-out);
+}
+
+.option:hover .radio:not([data-checked], [data-disabled]) {
+  background: var(--color-surface-1);
 }
 
 /* Checked: a 6 px ring, the inner dot shows the surface through it (DESIGN_SPEC 3.44). */

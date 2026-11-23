@@ -19,6 +19,10 @@
     background-color var(--duration-fast) var(--easing-out),
     color var(--duration-fast) var(--easing-out);
 
+  &:hover {
+    background-image: linear-gradient(var(--color-pressed-overlay-strong), var(--color-pressed-overlay-strong));
+  }
+
   /* 28 high; the pseudo-element keeps the tap zone at 44 (DESIGN_SPEC 1.8). */
   &::after {
     content: '';

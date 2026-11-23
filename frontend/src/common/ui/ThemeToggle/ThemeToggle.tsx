@@ -1,6 +1,8 @@
 import { Switch, SwitchThumb } from '@ui-sdk/react/switch'
 import { useId, useRef } from 'react'
 
+import { Icon } from '../Icon/Icon.tsx'
+import { Moon, Sun } from '../Icon/icons.ts'
 import { SegmentedControl, type SegmentedControlOption } from '../SegmentedControl/SegmentedControl.tsx'
 import styles from './ThemeToggle.module.css'
 
@@ -26,10 +28,10 @@ export interface ThemeToggleProps {
   value: ThemeValue
   onChange: (value: ThemeValue) => void
   /**
-   * `switch` is the desktop control from DESIGN_SPEC 3.40; `segmented` is the
-   * mobile MenuDrawer control (3.2, 3.45).
+   * `switch` is the classic Sidebar control; `pill` is the compact 60×28 Topbar control;
+   * `segmented` is the mobile MenuDrawer control (DESIGN_SPEC 3.2, 3.40, 3.45).
    */
-  variant?: 'switch' | 'segmented'
+  variant?: 'switch' | 'pill' | 'segmented'
   className?: string
 }
 
@@ -49,21 +51,32 @@ export function ThemeToggle({ value, onChange, variant = 'switch', className }: 
     )
   }
 
-  return <ThemeSwitch value={value} onChange={onChange} className={className} />
+  return <ThemeSwitch value={value} onChange={onChange} pill={variant === 'pill'} className={className} />
 }
 
-function ThemeSwitch({ value, onChange, className }: Pick<ThemeToggleProps, 'value' | 'onChange' | 'className'>) {
+function ThemeSwitch({
+  value,
+  onChange,
+  pill,
+  className,
+}: Pick<ThemeToggleProps, 'value' | 'onChange' | 'className'> & { pill: boolean }) {
   const hintId = useId()
   const pressStartedAt = useRef<number | null>(null)
   const lastLongPressAt = useRef(Number.NEGATIVE_INFINITY)
 
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')} data-state={value}>
-      <span className={styles.label} data-active={value === 'light' ? '' : undefined}>
-        Светлая
-      </span>
+    <div
+      className={[styles.root, pill && styles.pillRoot, className].filter(Boolean).join(' ')}
+      data-state={value}
+      data-variant={pill ? 'pill' : 'switch'}
+    >
+      {!pill && (
+        <span className={styles.label} data-active={value === 'light' ? '' : undefined}>
+          Светлая
+        </span>
+      )}
       <Switch
-        className={styles.switch}
+        className={pill ? styles.pillSwitch : styles.switch}
         checked={value === 'dark'}
         aria-label={SWITCH_LABELS[value]}
         aria-describedby={hintId}
@@ -107,11 +120,23 @@ function ThemeSwitch({ value, onChange, className }: Pick<ThemeToggleProps, 'val
           onChange(checked ? 'dark' : 'light')
         }}
       >
-        <SwitchThumb className={styles.thumb} />
+        <SwitchThumb className={pill ? styles.pillThumb : styles.thumb} />
+        {pill && (
+          <span className={styles.pillIcons} aria-hidden="true">
+            <span className={styles.pillGlyph} data-active={value === 'light' ? '' : undefined}>
+              <Icon icon={Sun} size={12} />
+            </span>
+            <span className={styles.pillGlyph} data-active={value === 'dark' ? '' : undefined}>
+              <Icon icon={Moon} size={12} />
+            </span>
+          </span>
+        )}
       </Switch>
-      <span className={styles.label} data-active={value === 'dark' ? '' : undefined}>
-        Тёмная
-      </span>
+      {!pill && (
+        <span className={styles.label} data-active={value === 'dark' ? '' : undefined}>
+          Тёмная
+        </span>
+      )}
       <span className="visually-hidden" id={hintId}>
         Долгое нажатие или Shift+F10 — как в системе
       </span>

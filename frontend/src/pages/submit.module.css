@@ -1,0 +1,160 @@
+.page {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-6) var(--space-4) var(--space-10);
+
+  @media (width >= 1024px) {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+    gap: var(--space-8);
+    padding: var(--space-6) var(--space-8) var(--space-12);
+  }
+
+  @media (width >= 1200px) {
+    grid-template-columns: minmax(0, 640px) 360px;
+    gap: var(--space-12);
+  }
+}
+
+.main {
+  display: grid;
+  gap: var(--space-6);
+  min-inline-size: 0;
+  max-inline-size: 640px;
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.fieldGroup {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.fieldset {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.legend {
+  padding: 0;
+  color: var(--color-text);
+}
+
+.stack {
+  display: grid;
+}
+
+.nested {
+  padding-inline-start: var(--space-8);
+  padding-block-end: var(--space-2);
+}
+
+/* Figma 20:21979: «Проверили сами?» radio choices sit side-by-side with 24 px gap. */
+.fieldset .inlineRadio {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-6);
+}
+
+.fieldset .inlineRadio > label {
+  inline-size: auto;
+}
+
+/* TextField already renders the calendar glyph via trailingIcon; hide the duplicate native Chromium picker icon while keeping clicks working. */
+.dateField input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  margin-inline-end: -24px;
+  cursor: pointer;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.submitWrap {
+  display: grid;
+
+  @media (width >= 1024px) {
+    justify-items: start;
+  }
+}
+
+.aside {
+  display: none;
+
+  @media (width >= 1024px) {
+    position: sticky;
+    inset-block-start: var(--space-8);
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-1);
+  }
+}
+
+.asideHeader {
+  margin-block-end: 0;
+}
+
+.success {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+
+  @media (width >= 1024px) {
+    justify-items: start;
+    text-align: start;
+  }
+}
+
+.successIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 64px;
+  block-size: 64px;
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.successGlyph {
+  inline-size: 32px;
+  block-size: 32px;
+}
+
+.successText {
+  color: var(--color-text-muted);
+  max-inline-size: 46ch;
+}
+
+.successActions {
+  display: grid;
+  gap: var(--space-3);
+  inline-size: 100%;
+  margin-block-start: var(--space-2);
+
+  @media (width >= 1024px) {
+    display: flex;
+    flex-wrap: wrap;
+    inline-size: auto;
+  }
+}

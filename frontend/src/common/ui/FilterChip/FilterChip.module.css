@@ -29,8 +29,9 @@
   inset: -4px;
 }
 
-.root:hover {
+.root:hover:not([data-disabled]) {
   background: var(--color-surface-1);
+  border-color: color-mix(in srgb, var(--color-border-strong) 40%, transparent);
 }
 
 .root[data-pressed],
@@ -40,9 +41,10 @@
   color: var(--color-on-primary);
 }
 
-.root[data-pressed]:hover,
-.root[data-selected='true']:hover {
-  background: var(--color-primary);
+.root[data-pressed]:hover:not([data-disabled]),
+.root[data-selected='true']:hover:not([data-disabled]) {
+  background: color-mix(in srgb, var(--color-primary) 86%, var(--color-on-primary));
+  border-color: color-mix(in srgb, var(--color-primary) 86%, var(--color-on-primary));
 }
 
 .root[data-disabled] {

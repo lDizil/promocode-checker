@@ -4,6 +4,8 @@ import { expect, fn, within } from 'storybook/test'
 import preview from '#.storybook/preview'
 
 import type { ThemeValue } from '@/common/ui/ThemeToggle/index.ts'
+import { offerHandlers } from '@/modules/offer/mocks.ts'
+import { searchHandlers } from '@/modules/search/mocks.ts'
 
 import { AppShellView, type AppShellViewProps } from './AppShellView.tsx'
 
@@ -25,6 +27,9 @@ const meta = preview.meta({
   component: AppShellView,
   parameters: { layout: 'fullscreen', design: { type: 'figma', url: FIGMA } },
   args: { children: <ShellContent />, theme: 'system' as const, onThemeChange: fn() },
+  beforeEach({ msw }) {
+    msw.use(...offerHandlers, ...searchHandlers)
+  },
 })
 
 function AppShellDemo({ width, ...args }: AppShellViewProps & { width: number }) {
@@ -61,7 +66,9 @@ export const Desktop = meta.story({
   play: async ({ canvas, userEvent }) => {
     const sidebar = canvas.getByRole('complementary', { name: 'Боковая панель' })
     await expect(within(sidebar).getByRole('navigation', { name: 'Главное меню' })).toBeVisible()
-    const toggle = within(sidebar).getByRole('switch')
+    await expect(within(sidebar).getByText('Знаете код?')).toBeVisible()
+    await expect(canvas.getByText(/проверено сегодня/)).toBeVisible()
+    const toggle = canvas.getByRole('switch')
     await expect(toggle).toBeVisible()
     await userEvent.click(toggle)
     await expect(toggle).toHaveAttribute('aria-checked', 'true')

@@ -1,0 +1,29 @@
+.root {
+  inline-size: 200px;
+}
+
+.list {
+  display: grid;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  min-block-size: 32px;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--easing-out);
+}
+
+.link:hover {
+  color: var(--color-text);
+}
+
+.link[data-active] {
+  border-inline-start: 2px solid var(--color-border-strong);
+  padding-inline-start: calc(var(--space-3) - 1px);
+  color: var(--color-text);
+  font-weight: 600;
+}

@@ -29,6 +29,11 @@
   background: var(--color-neutral-bg);
   cursor: pointer;
   overflow: visible;
+  transition: background-color var(--duration-fast) var(--easing-out);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-neutral-bg) 82%, var(--color-text));
+  }
 
   /* 24px control, 44px tap zone (DESIGN_SPEC 1.8). */
   &::after {
@@ -55,4 +60,74 @@
 
 .root[data-state='system'] .thumb {
   inset-inline-start: 11px;
+}
+
+.pillSwitch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  inline-size: 60px;
+  block-size: 28px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  cursor: pointer;
+  overflow: visible;
+  transition: border-color var(--duration-fast) var(--easing-out);
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-border-strong) 45%, transparent);
+  }
+
+  /* 28px control, 44px tap zone (DESIGN_SPEC 1.8). */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -8px 0;
+  }
+}
+
+.pillThumb {
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-start: 1px;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  transition: inset-inline-start var(--duration-fast) var(--easing-out);
+}
+
+.pillThumb[data-checked] {
+  inset-inline-start: 33px;
+}
+
+.root[data-state='system'] .pillThumb {
+  inset-inline-start: 17px;
+}
+
+.pillIcons {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  padding-inline: 1px;
+  pointer-events: none;
+}
+
+.pillGlyph {
+  display: grid;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast) var(--easing-out);
+}
+
+.pillGlyph[data-active] {
+  color: var(--color-on-primary);
 }

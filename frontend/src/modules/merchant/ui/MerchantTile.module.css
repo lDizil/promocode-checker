@@ -10,7 +10,9 @@
   text-decoration: none;
   background: var(--color-surface-1);
   border-radius: var(--radius-md);
-  transition: background-color var(--duration-fast) var(--easing-out);
+  transition:
+    background-color var(--duration-fast) var(--easing-out),
+    transform var(--duration-fast) var(--easing-out);
 }
 
 .tile[data-interactive] {
@@ -19,10 +21,21 @@
 
 .tile[data-interactive]:hover {
   background: var(--color-neutral-bg);
+  transform: translateY(-2px);
 }
 
 .tile[data-interactive]:active {
   background-image: linear-gradient(var(--color-pressed-overlay), var(--color-pressed-overlay));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    transition: none;
+  }
+
+  .tile[data-interactive]:hover {
+    transform: none;
+  }
 }
 
 .name {

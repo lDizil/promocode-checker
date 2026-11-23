@@ -14,7 +14,7 @@ export interface TextFieldProps {
   onValueChange: (value: string) => void
   /** `code` renders JetBrains Mono and upper-cases the value (DESIGN_SPEC 3.42). */
   kind?: TextFieldKind
-  type?: 'text' | 'number'
+  type?: 'text' | 'number' | 'date' | 'url'
   inputMode?: 'decimal' | 'numeric'
   min?: number
   placeholder?: string
